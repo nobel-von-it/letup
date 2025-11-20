@@ -17,6 +17,8 @@ INSTALL_DIR="$ZED_DIR/installed/$EXT_NAME"
 TEMP_FILE="/tmp/${EXT_NAME}-zed-ext.tar.gz"
 URL="https://api.zed.dev/extensions/$EXT_NAME/download"
 
+PROXY_URL="${LOCAL_PROXY_URL:-socks5h://127.0.0.1:10808}"
+
 clean_exit() {
     rm "$TEMP_FILE"
     exit 1
@@ -31,9 +33,12 @@ fi
 echo "INSTALLING $EXT_NAME ($URL)..."
 
 while true; do
-    wget -c --read-timeout=5 -t 1 --show-progress -O "$TEMP_FILE" "$URL"
+    curl -L -C - --retry 3 --retry-delay 2 \
+             -x "$PROXY_URL" \
+             --user-agent "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36" \
+             --output "$TEMP_FILE" "$URL"
 
-    if [ $? -eq 0 ]; then
+    if [ $? -eq 0 ] || [ $? -eq 18 ]; then
         echo "Archive downloaded"
         break
     else
