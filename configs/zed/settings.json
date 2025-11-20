@@ -35,5 +35,17 @@
     "toml": true,
     "git-firefly": true,
     "make": true
+  },
+  "disable_ai": true,
+  "minimap": {
+    "show": "auto",
+    "thumb": "always",
+    "thumb_border": "left_open",
+    "current_line_highlight": "line"
+  },
+  "tabs": {
+    "file_icons": true,
+    "git_status": true,
+    "show_diagnostics": "errors"
   }
 }
