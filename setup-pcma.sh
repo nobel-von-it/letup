@@ -1,9 +1,6 @@
 #!/bin/bash
 
 LOCAL_BIN="$HOME/.local/bin"
-mkdir -p "$LOCAL_BIN"
-
-install -D -m 755 $(realpath "./pcma") "$LOCAL_BIN"
 
 add_export_path() {
     local shell=$(basename "$SHELL")
@@ -20,8 +17,13 @@ add_export_path() {
     esac
 }
 
+mkdir -p "$LOCAL_BIN"
+
+install -D -m 755 $(realpath "./pcma") "$LOCAL_BIN"
+
+
 if command -v pcma &> /dev/null; then
     echo "Done!"
 else
-
+    add_export_path
 fi
