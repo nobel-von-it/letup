@@ -27,6 +27,13 @@
       }
     }
   },
-  "proxy": "http://127.0.0.1:10808"
-  // bruh
+  "proxy": "http://127.0.0.1:10808",
+  "auto_install_extensions": {
+    "rust-snippets": true,
+    "html": true,
+    "html-snippets": true,
+    "toml": true,
+    "git-firefly": true,
+    "make": true
+  }
 }
