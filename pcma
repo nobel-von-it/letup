@@ -65,6 +65,24 @@ case "$MODE" in
             exit 1
         fi
         ;;
+    -I)
+        shift
+        local pkg_type="$1"
+        case "$1" in
+            pacman)
+                if ! sudo pacman -S - < "$PACMAN_LIST"; then
+                    pacman -S - < "$PACMAN_LIST"
+                fi
+                ;;
+            aur)
+                "$AUR_HELPER" -S - < "$AUR_LIST"
+                ;;
+            *)
+                echo "Custom lists not supported yet"
+                exit 0
+                ;;
+        esac
+        ;;
     *)
         sudo pacman "$@"
         ;;
