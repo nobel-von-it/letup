@@ -1,0 +1,71 @@
+#!/bin/bash
+
+LIST_DIR="$(realpath ".")/pcma-lists"
+PACMAN_LIST="$LIST_DIR/pacman-packages"
+AUR_LIST="$LIST_DIR/aur-packages"
+
+mkdir -p "$LIST_DIR"
+touch "$PACMAN_LIST" "$AUR_LIST"
+
+if command -v paru &> /dev/null; then
+    AUR_HELPER="paru"
+elif command -v yay &> /dev/null; then
+    AUR_HELPER="yay"
+else
+    echo "No aur helper is installed"
+    exit 1
+fi
+
+add_to_list() {
+    local file="$1"
+    shift
+    local pkgs=("$@")
+
+    for pkg in "${pkgs[@]}"; do
+        if ! grep -Fxq "$pkg" "$file"; then
+            echo "$pkg" >> "$file"
+            echo " -> $pkg added"
+        else
+            echo " !> $pkg already in"
+        fi
+    done
+}
+
+MODE="$1"
+
+case "$MODE" in
+    -P)
+        shift
+        if [ $# -eq 0 ]; then
+            echo "No packages"
+            exit 1
+        fi
+
+        echo " :%: installing with PACMAN"
+
+        if sudo pacman -S "$@"; then
+            add_to_list "$PACMAN_LIST" "$@"
+        else
+            echo "Installation failed"
+            exit 1
+        fi
+        ;;
+    -A)
+        shift
+        if [ $# -eq 0 ]; then
+            echo "No packages"
+            exit 1
+        fi
+
+        echo " :%: installing with AUR HELPER"
+        if "$AUR_HELPER" -S "$@"; then
+            add_to_list "$AUR_LIST" "$@"
+        else
+            echo "Installation failed"
+            exit 1
+        fi
+        ;;
+    *)
+        sudo pacman "$@"
+        ;;
+esac
