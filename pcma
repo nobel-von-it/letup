@@ -13,7 +13,7 @@ elif command -v yay &> /dev/null; then
     AUR_HELPER="yay"
 else
     echo "No aur helper is installed"
-    echo "Cannot use -A flag"
+    echo "Cannot use -A flag and aur installation"
 fi
 
 add_to_list() {
@@ -31,15 +31,19 @@ add_to_list() {
     done
 }
 
+shift_and_check() {
+    shift
+    if [ $# -eq 0 ]; then
+        echo "No packages"
+        exit 1
+    fi
+}
+
 MODE="$1"
 
 case "$MODE" in
     -P)
-        shift
-        if [ $# -eq 0 ]; then
-            echo "No packages"
-            exit 1
-        fi
+        shift_and_check
 
         echo " :%: installing with PACMAN"
 
@@ -51,11 +55,7 @@ case "$MODE" in
         fi
         ;;
     -A)
-        shift
-        if [ $# -eq 0 ]; then
-            echo "No packages"
-            exit 1
-        fi
+        shift_and_check
 
         echo " :%: installing with AUR HELPER"
         if "$AUR_HELPER" -S "$@"; then
@@ -67,7 +67,6 @@ case "$MODE" in
         ;;
     -I)
         shift
-        local pkg_type="$1"
         case "$1" in
             pacman)
                 if ! sudo pacman -S - < "$PACMAN_LIST"; then
@@ -83,6 +82,14 @@ case "$MODE" in
                 ;;
         esac
         ;;
+    -l)
+        if command -v bat &> /dev/null; then
+            bat "$PACMAN_LIST"
+            bat "$AUR_LIST"
+        else
+            cat "$PACMAN_LIST"
+            cat "$AUR_LIST"
+        fi
     *)
         sudo pacman "$@"
         ;;
