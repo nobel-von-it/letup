@@ -9,10 +9,12 @@ add_export_path() {
         bash)
             local rc="$HOME/.bashrc"
             echo "export PATH=$HOME/.local/bin:$PATH" >> "$rc"
+            source "$rc"
             ;;
         zsh)
             local rc="$HOME/.zshrc"
             echo "export PATH=$HOME/.local/bin:$PATH" >> "$rc"
+            source "$rc"
             ;;
         *)
             echo "Shell is not supported"
