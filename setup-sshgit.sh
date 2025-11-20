@@ -16,14 +16,18 @@ KEY_PATH="$HOME/.ssh/id_ed25519"
 generate_key() {
     if ! command -v ssh-keygen &> /dev/null; then
         if command -v pcma &> /dev/null; then
-            sudo pcma -P openssh
+            if ! sudo pcma -P openssh; then
+                pcma -P openssh
+            fi
         else
             read -p "Use default pacman? (y/N): " default_pacman
             if [[ "$default_pacman" != "y" ]] && [[ "$default_pacman" != "Y" ]]; then
                 echo "Run setup-pcma.sh first"
                 exit 0
             else
-                sudo pacman -S openssh
+                if ! sudo pacman -S openssh; then
+                    pacman -S openssh
+                fi
             fi
         fi
     fi
