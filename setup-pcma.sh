@@ -7,10 +7,12 @@ add_export_path() {
     echo "Adding to $shell"
     case "$shell" in
         bash)
-            echo "export PATH=$HOME/.local/bin:$PATH" >> $HOME/.bashrc
+            local rc="$HOME/.bashrc"
+            echo "export PATH=$HOME/.local/bin:$PATH" >> "$rc"
             ;;
         zsh)
-            echo "export PATH=$HOME/.local/bin:$PATH" >> $HOME/.bashrc
+            local rc="$HOME/.zshrc"
+            echo "export PATH=$HOME/.local/bin:$PATH" >> "$rc"
             ;;
         *)
             echo "Shell is not supported"
