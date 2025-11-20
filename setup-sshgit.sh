@@ -13,16 +13,33 @@ echo "Creating ssh key for $NAME < $EMAIL >"
 
 KEY_PATH="$HOME/.ssh/id_ed25519"
 
+generate_key() {
+    if ! command -v ssh-keygen &> /dev/null; then
+        if command -v pcma &> /dev/null; then
+            sudo pcma -P openssh
+        else
+            read -p "Use default pacman? (y/N): " default_pacman
+            if [[ "$default_pacman" != "y" ]] && [[ "$default_pacman" != "Y" ]]; then
+                echo "Run setup-pcma.sh first"
+                exit 0
+            else
+                sudo pacman -S openssh
+            fi
+        fi
+    fi
+    ssh-keygen -t ed25519 -C "$EMAIL" -f "$KEY_PATH"
+}
+
 if [ -f "$KEY_PATH" ]; then
     echo "Key exist"
     read -p "Rewrite (y/N): " OVERWRITE
     if [[ "$OVERWRITE" != "y" && "$OVERWRITE" != "Y" ]]; then
         echo "Discard generation"
     else
-        ssh-keygen -t ed25519 -C "$EMAIL" -f "$KEY_PATH"
+        generate_key
     fi
 else
-    ssh-keygen -t ed25519 -C "$EMAIL" -f "$KEY_PATH"
+    generate_key
 fi
 
 eval "$(ssh-agent -s)"
