@@ -1,6 +1,6 @@
 #!/bin/bash
 
-LIST_DIR="$(realpath ".")/pcma-lists"
+LIST_DIR="$HOME/Downloads/Git/letup/pcma-lists"
 PACMAN_LIST="$LIST_DIR/pacman-packages"
 AUR_LIST="$LIST_DIR/aur-packages"
 
@@ -13,7 +13,7 @@ elif command -v yay &> /dev/null; then
     AUR_HELPER="yay"
 else
     echo "No aur helper is installed"
-    exit 1
+    echo "Cannot use -A flag"
 fi
 
 add_to_list() {
