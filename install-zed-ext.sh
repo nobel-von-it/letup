@@ -12,7 +12,7 @@ if [ -z "$1" ]; then
 fi
 
 EXT_NAME="$1"
-ZED_DIR="$HOME/.local/share/zed/extensions/"
+ZED_DIR="$HOME/.local/share/zed/extensions"
 INSTALL_DIR="$ZED_DIR/installed/$EXT_NAME"
 TEMP_FILE="/tmp/${EXT_NAME}-zed-ext.tar.gz"
 URL="https://api.zed.dev/extensions/$EXT_NAME/download"
@@ -28,10 +28,10 @@ if pgrep -x "zed-editor|zeditor|zed" > /dev/null; then
     read
 fi
 
-echo "INSTALLING $EXT_NAME..."
+echo "INSTALLING $EXT_NAME ($URL)..."
 
 while true; do
-    wget -c --read-timeout=5 -t 1 --show-progress -o "$TEMP_FILE" "$URL"
+    wget -c --read-timeout=5 -t 1 --show-progress -O "$TEMP_FILE" "$URL"
 
     if [ $? -eq 0 ]; then
         echo "Archive downloaded"
