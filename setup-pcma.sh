@@ -4,6 +4,7 @@ LOCAL_BIN="$HOME/.local/bin"
 
 add_export_path() {
     local shell=$(basename "$SHELL")
+    echo "Adding to $shell"
     case "$shell" in
         bash)
             echo "export PATH=$HOME/.local/bin:$PATH" >> $HOME/.bashrc
