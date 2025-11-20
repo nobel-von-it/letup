@@ -1,3 +1,6 @@
 #!/bin/bash
 
-install -D -m 755 $(realpath "./pcma") "$HOME/.local/bin/"
+LOCAL_BIN="$HOME/.local/bin"
+mkdir -p "$LOCAL_BIN"
+
+install -D -m 755 $(realpath "./pcma") "$LOCAL_BIN"
