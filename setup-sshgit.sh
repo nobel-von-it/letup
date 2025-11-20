@@ -4,10 +4,10 @@ DEMAIL="maksimdavydenko12@gmail.com"
 DNAME="nobel-von-it"
 
 read -p "EMAIL [$DEMAIL]: " IEMAIL
-EMAIL=$(IEMAIL:-$DEMAIL)
+EMAIL=${IEMAIL:-$DEMAIL}
 
 read -p "NAME [$DNAME]: " INAME
-NAME=$(INAME:-$DNAME)
+NAME=${INAME:-$DNAME}
 
 echo "Creating ssh key for $NAME < $EMAIL >"
 
