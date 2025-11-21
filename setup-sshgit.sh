@@ -58,7 +58,7 @@ elif command -v wl-copy &> /dev/null; then
     echo "$PUB_KEY" | wl-copy
     echo "Pub key is copied (wl-copy)"
 else
-    echo "Do it yourself:"
+    echo "Copy it yourself:"
     echo "$PUB_KEY"
 fi
 
