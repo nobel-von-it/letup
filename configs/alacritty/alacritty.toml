@@ -71,15 +71,3 @@ blue = "#6699cc"
 magenta = "#cc99cc"
 cyan = "#66cccc"
 white = "#dddddd"
-
-[keyboard]
-bindings = [
-  { key = "C", mods = "Control|Shift", action = "Copy" },
-  { key = "V", mods = "Control|Shift", action = "Paste" },
-  { key = "Insert", mods = "Shift", action = "PasteSelection" },
-  { key = "Plus", mods = "Control", action = "IncreaseFontSize" },
-  { key = "Minus", mods = "Control", action = "DecreaseFontSize" },
-  { key = "Key0", mods = "Control", action = "ResetFontSize" },
-  { key = "PageUp", mods = "Shift", action = "ScrollPageUp" },
-  { key = "PageDown", mods = "Shift", action = "ScrollPageDown" },
-]
