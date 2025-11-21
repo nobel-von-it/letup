@@ -1,0 +1,3 @@
+[submodule "configs/minvim"]
+	path = configs/minvim
+	url = git@github.com:nobel-von-it/minvim.git
