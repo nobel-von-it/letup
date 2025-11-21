@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
+import json
 import os
 import sys
-import json
 from pathlib import Path
 from typing import cast
 
@@ -12,11 +12,14 @@ except ImportError:
     print("Please install inquirer")
     sys.exit(1)
 
+
 def is_command_available(command: str) -> bool:
     return os.system(f"command -v {command}") == 0
 
+
 def pacman_install(packages: list[str]) -> None:
     os.system(f"sudo pacman -S --needed {' '.join(packages)}")
+
 
 def aur_install(packages: list[str]) -> None:
     if is_command_available("paru"):
@@ -27,10 +30,14 @@ def aur_install(packages: list[str]) -> None:
         print("Please install paru or yay")
         sys.exit(1)
 
+
 def yay_install(packages: list[str]) -> None:
     os.system(f"yay -S --needed {' '.join(packages)}")
+
+
 def paru_install(packages: list[str]) -> None:
     os.system(f"paru -S --needed {' '.join(packages)}")
+
 
 def main() -> None:
     questions = [
@@ -64,6 +71,7 @@ def main() -> None:
         aur_install(aur_packages)
 
     print("Packages installed")
+
 
 if __name__ == "__main__":
     main()
