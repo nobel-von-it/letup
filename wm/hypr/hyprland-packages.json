@@ -1,0 +1,18 @@
+{
+  "packages": {
+    "pacman": [
+      "hyprland",
+      "hyprpaper",
+      "hyprpicker",
+      "waybar",
+      "wofi",
+      "alacritty",
+      "grim",
+      "slurp",
+      "swappy",
+      "wireplumber",
+      "brightnessctl",
+      "playerctl"
+    ]
+  }
+}
