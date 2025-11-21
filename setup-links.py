@@ -3,7 +3,6 @@
 import os
 import sys
 from pathlib import Path
-from typing import cast
 
 try:
     import inquirer
@@ -31,7 +30,7 @@ def check_configs_exist(src_path: Path, config_list: list[str]) -> list[str]:
     return not_founded
 
 
-def main() -> None:
+def inquirer_questions() -> tuple[Path, Path, list[str]]:
     questions = [
         inquirer.Path(
             "src",
@@ -55,17 +54,10 @@ def main() -> None:
         print("Aborted")
         sys.exit(1)
 
-    src_path = Path(answers["src"])
-    dest_path = Path(answers["dest"])
-    config_list = cast(list[str], answers["configs"])
-    print(f"Linking {config_list} configs from {src_path} to {dest_path}")
+    return (Path(answers["src"]), Path(answers["dest"]), answers["configs"])
 
-    not_founded = check_configs_exist(src_path, config_list)
-    if not_founded:
-        print(f"Configs not found: {not_founded}")
-        sys.exit(1)
-    print("Configs found")
 
+def link_configs(src_path: Path, dest_path: Path, config_list: list[str]) -> None:
     for config in config_list:
         full_dest_path = dest_path / config
         print(f"  -* Checking {full_dest_path}")
@@ -79,6 +71,19 @@ def main() -> None:
                 sys.exit(1)
         os.symlink(src_path / config, full_dest_path)
         print(f"    -* Linked {config}")
+
+
+def main() -> None:
+    src_path, dest_path, config_list = inquirer_questions()
+    print(f"Linking {config_list} configs from {src_path} to {dest_path}")
+
+    not_founded = check_configs_exist(src_path, config_list)
+    if not_founded:
+        print(f"Configs not found: {not_founded}")
+        sys.exit(1)
+    print("Configs found")
+
+    link_configs(src_path, dest_path, config_list)
     print("DONE")
 
 
