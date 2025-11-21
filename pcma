@@ -31,19 +31,15 @@ add_to_list() {
     done
 }
 
-shift_and_check() {
-    shift
-    if [ $# -eq 0 ]; then
-        echo "No packages"
-        exit 1
-    fi
-}
-
 MODE="$1"
 
 case "$MODE" in
     -P)
-        shift_and_check
+        shift
+        if [ $# -eq 0 ]; then
+            echo "No packages"
+            exit 1
+        fi
 
         echo " :%: installing with PACMAN"
 
@@ -55,7 +51,11 @@ case "$MODE" in
         fi
         ;;
     -A)
-        shift_and_check
+        shift
+        if [ $# -eq 0 ]; then
+            echo "No packages"
+            exit 1
+        fi
 
         echo " :%: installing with AUR HELPER"
         if "$AUR_HELPER" -S "$@"; then
@@ -90,6 +90,7 @@ case "$MODE" in
             cat "$PACMAN_LIST"
             cat "$AUR_LIST"
         fi
+        ;;
     *)
         sudo pacman "$@"
         ;;
