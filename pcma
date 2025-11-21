@@ -13,7 +13,7 @@ elif command -v yay &> /dev/null; then
     AUR_HELPER="yay"
 else
     echo "No aur helper is installed"
-    echo "Cannot use -A flag"
+    echo "Cannot use -A flag and aur installation"
 fi
 
 add_to_list() {
@@ -63,6 +63,32 @@ case "$MODE" in
         else
             echo "Installation failed"
             exit 1
+        fi
+        ;;
+    -I)
+        shift
+        case "$1" in
+            pacman)
+                if ! sudo pacman -S - < "$PACMAN_LIST"; then
+                    pacman -S - < "$PACMAN_LIST"
+                fi
+                ;;
+            aur)
+                "$AUR_HELPER" -S - < "$AUR_LIST"
+                ;;
+            *)
+                echo "Custom lists not supported yet"
+                exit 0
+                ;;
+        esac
+        ;;
+    -l)
+        if command -v bat &> /dev/null; then
+            bat "$PACMAN_LIST"
+            bat "$AUR_LIST"
+        else
+            cat "$PACMAN_LIST"
+            cat "$AUR_LIST"
         fi
         ;;
     *)
