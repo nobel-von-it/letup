@@ -4,7 +4,7 @@ TERM = "xterm-256color"
 [window]
 padding = { x = 10, y = 10 }
 dynamic_title = true
-opacity = 1
+opacity = 1.0  # Можно поставить 0.95 для легкой прозрачности, это добавит "воздуха"
 blur = true
 
 [window.class]
@@ -39,35 +39,35 @@ style = "Block"
 blink_interval = 500
 
 [colors.primary]
-background = "#24283b"
-foreground = "#c0caf5"
+background = "#1a1c23"
+foreground = "#aab1be"
 
 [colors.normal]
-black = "#1d202f"
-red = "#f7768e"
-green = "#9ece6a"
-yellow = "#e0af68"
-blue = "#7aa2f7"
-magenta = "#bb9af7"
-cyan = "#7dcfff"
-white = "#a9b1d6"
+black = "#2c323c"
+red = "#b07b7b"
+green = "#8da18d"
+yellow = "#bfb48f"
+blue = "#7a8ca3"
+magenta = "#9e8ba3"
+cyan = "#889ca6"
+white = "#aab1be"
 
 [colors.bright]
-black = "#414868"
-red = "#f7768e"
-green = "#9ece6a"
-yellow = "#e0af68"
-blue = "#7aa2f7"
-magenta = "#bb9af7"
-cyan = "#7dcfff"
-white = "#c0caf5"
+black = "#4b5263"
+red = "#d48f8f"
+green = "#a3bea3"
+yellow = "#d6c694"
+blue = "#8ca3bd"
+magenta = "#bda3b7"
+cyan = "#9cb0ba"
+white = "#d8dee9"
 
 [colors.dim]
-black = "#333333"
-red = "#f2777a"
-green = "#99cc99"
-yellow = "#ffcc66"
-blue = "#6699cc"
-magenta = "#cc99cc"
-cyan = "#66cccc"
-white = "#dddddd"
+black = "#1f2329"
+red = "#8c6262"
+green = "#708070"
+yellow = "#999072"
+blue = "#617082"
+magenta = "#7e6f82"
+cyan = "#6d7d85"
+white = "#888d98"
