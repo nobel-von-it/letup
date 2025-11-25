@@ -18,6 +18,7 @@ CONFIG_NAMES = [
     "yazi",
     "alacritty",
     "minvim",
+    "fish",
     "zed",
 ]
 
