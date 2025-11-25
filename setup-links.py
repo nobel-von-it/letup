@@ -17,7 +17,7 @@ DEST_CONFIG_PATH = Path.home() / ".config"
 CONFIG_NAMES = [
     "yazi",
     "alacritty",
-    "minvim",
+    "minvim:nvim",
     "fish",
     "zed",
 ]
@@ -26,8 +26,10 @@ CONFIG_NAMES = [
 def check_configs_exist(src_path: Path, config_list: list[str]) -> list[str]:
     not_founded = []
     for config in config_list:
-        if not (src_path / config).exists():
-            not_founded.append(config)
+        print(f"  -* Checking {config}")
+        orig_name = config.split(":")[0]
+        if not (src_path / orig_name).exists():
+            not_founded.append(orig_name)
 
     return not_founded
 
@@ -61,7 +63,12 @@ def inquirer_questions() -> tuple[Path, Path, list[str]]:
 
 def link_configs(src_path: Path, dest_path: Path, config_list: list[str]) -> None:
     for config in config_list:
-        full_dest_path = dest_path / config
+        names = config.split(":")
+
+        orig_name, link_name = names if len(names) == 2 else (config, config)
+
+        full_src_path = src_path / orig_name
+        full_dest_path = dest_path / link_name
         print(f"  -* Checking {full_dest_path}")
         if full_dest_path.exists():
             if full_dest_path.is_symlink():
@@ -71,7 +78,7 @@ def link_configs(src_path: Path, dest_path: Path, config_list: list[str]) -> Non
                 print(f"    -* {full_dest_path} is not a symlink")
                 print("Aborted")
                 sys.exit(1)
-        os.symlink(src_path / config, full_dest_path)
+        os.symlink(full_src_path, full_dest_path)
         print(f"    -* Linked {config}")
 
 
