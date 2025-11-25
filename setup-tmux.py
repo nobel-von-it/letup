@@ -19,6 +19,10 @@ TPM_PATH = Path.home() / ".tmux/plugins/tpm"
 TPM_URL = "https://github.com/tmux-plugins/tpm"
 
 
+def is_command_available(command: str) -> bool:
+    return os.system(f"command -v {command}") == 0
+
+
 def check_config_exist(src_path: Path) -> bool:
     print(f"  -* Checking {CONFIG_NAME}")
     if src_path.name != "configs" and src_path.name.startswith(".tmux"):
@@ -44,6 +48,14 @@ def inquirer_questions() -> tuple[Path, Path]:
 def main():
     if not check_config_exist(SRC_CONFIG_PATH):
         print("Configs not found")
+        sys.exit(1)
+
+    if not is_command_available("git"):
+        print("Please install git")
+        sys.exit(1)
+
+    if not is_command_available("tmux"):
+        print("Please install tmux")
         sys.exit(1)
 
     src_path, dest_path = inquirer_questions()
