@@ -1,2 +1,3 @@
 *.tar.gz
 .ruff_cache
+configs/tmux/plugins/

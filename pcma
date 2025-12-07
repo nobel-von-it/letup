@@ -1,6 +1,16 @@
 #!/bin/bash
 
-LIST_DIR="$HOME/Downloads/Git/letup/pcma-lists"
+DEFAULT_PATH="$HOME/Downloads/Git/letup/pcma-lists"
+CURRENT_DIR="$(realpath .)"
+
+LIST_DIR="$(realpath .)/pcma-lists"
+if [ "$CURRENT_DIR" == "$HOME/.local/bin" ]; then
+    read -p "Do you want to install in default path ($DEFAULT_PATH)? [y/n] " -n 1 -r
+    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+        read -p "Enter custom path: " -r LIST_DIR
+    fi
+fi
+
 PACMAN_LIST="$LIST_DIR/pacman-packages"
 AUR_LIST="$LIST_DIR/aur-packages"
 
