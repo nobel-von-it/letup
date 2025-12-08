@@ -14,7 +14,16 @@ except ImportError:
 SRC_CONFIG_PATH = Path(__file__).parent / "configs"
 DEST_CONFIG_PATH = Path.home() / ".config"
 
-CONFIG_NAMES = ["yazi", "alacritty", "minvim:nvim", "fish", "zed", "tmux", "sway"]
+CONFIG_NAMES = [
+    "yazi",
+    "alacritty",
+    "minvim:nvim",
+    "fish",
+    "zed",
+    "tmux",
+    "sway",
+    "easyeffects",
+]
 
 
 def check_configs_exist(src_path: Path, config_list: list[str]) -> list[str]:

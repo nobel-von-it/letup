@@ -1,0 +1,43 @@
+{
+    "items": {
+        "pacman": {
+            "preset1": [
+                "package1",
+                "package2",
+                "package3"
+            ],
+            "preset2": [
+                "package4",
+                "package5",
+                "package6"
+            ],
+            "defaults": [
+                "package7",
+                "package8",
+                "package9"
+            ]
+        },
+        "aur": {
+            "preset1": [
+                "package10",
+                {
+                    "name": "package11",
+                    "deps": [
+                        "package1"
+                    ]
+                },
+                "package12"
+            ],
+            "preset2": [
+                "package13",
+                "package14",
+                "package15"
+            ],
+            "defaults": [
+                "package16",
+                "package17",
+                "package18"
+            ]
+        }
+    }
+}

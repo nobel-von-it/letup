@@ -7,6 +7,13 @@
 // custom settings, run `zed: open default settings` from the
 // command palette (cmd-shift-p / ctrl-shift-p)
 {
+  "agent": {
+    "default_model": {
+      "provider": "ollama",
+      "model": "gpt-oss:20b"
+    },
+    "model_parameters": []
+  },
   "outline_panel": {
     "dock": "right"
   },
@@ -27,7 +34,7 @@
       }
     }
   },
-  "proxy": "http://127.0.0.1:10808",
+  // "proxy": "http://127.0.0.1:10808",
   "auto_install_extensions": {
     "rust-snippets": true,
     "html": true,
@@ -36,7 +43,6 @@
     "git-firefly": true,
     "make": true
   },
-  "disable_ai": true,
   "minimap": {
     "show": "auto",
     "thumb": "always",
