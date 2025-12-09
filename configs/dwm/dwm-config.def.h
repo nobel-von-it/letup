@@ -83,6 +83,10 @@ static const char *termcmd[] = {"st", "-e", "sh", "-c", "tmux a || tmux", NULL};
 /* Команда для скриншотов (аналог grim+slurp+swappy) */
 static const char *flameshotcmd[] = {"flameshot", "gui", NULL};
 
+static const char *swtichdmenucmd[] = {"/usr/local/bin/switch", NULL};
+static const char *websearchdmenucmd[] = {"/usr/local/bin/dmenu_websearch",
+                                          NULL};
+
 /* Для клавиши PrintScreen нужен заголовочный файл X11, но в dwm обычно
  * просто используют код клавиши XK_Print. Убедись, что xorg-proto установлен,
  * но dwm обычно подтягивает ключи сам.
@@ -97,6 +101,9 @@ static const Key keys[] = {
     /* Скриншот: клавиша PrintScreen (без модификаторов) */
     {0, XK_Print, spawn, {.v = flameshotcmd}},
 
+    {MODKEY, XK_z, spawn, {.v = swtichdmenucmd}},
+    {MODKEY, XK_w, spawn, {.v = websearchdmenucmd}},
+
     {MODKEY, XK_b, togglebar, {0}},
     {MODKEY, XK_j, focusstack, {.i = +1}},
     {MODKEY, XK_k, focusstack, {.i = -1}},
@@ -110,7 +117,7 @@ static const Key keys[] = {
     {MODKEY, XK_t, setlayout, {.v = &layouts[0]}},
     {MODKEY, XK_f, setlayout, {.v = &layouts[1]}},
     {MODKEY, XK_m, setlayout, {.v = &layouts[2]}},
-    {MODKEY, XK_space, setlayout, {0}},
+    {MODKEY | ShiftMask, XK_space, setlayout, {0}},
     {MODKEY | ShiftMask, XK_space, togglefloating, {0}},
     {MODKEY, XK_0, view, {.ui = ~0}},
     {MODKEY | ShiftMask, XK_0, tag, {.ui = ~0}},
