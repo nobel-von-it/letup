@@ -5,7 +5,6 @@ import asyncio
 import glob
 import os
 import shutil
-import stat
 from collections.abc import Coroutine
 from typing import Any, cast
 
@@ -207,11 +206,10 @@ def install_local_scripts(script_src_dir: str) -> None:
         if os.path.isfile(src_path):
             try:
                 # 1. chmod +x
-                st = os.stat(src_path)
-                os.chmod(src_path, st.st_mode | stat.S_IEXEC)
+                _ = os.system(f"chmod +x {src_path}")
 
                 # 2. Move (overwrite if exists)
-                shutil.move(src_path, dest_path)
+                _ = shutil.move(src_path, dest_path)
                 print(f"  [INSTALLED] {filename}")
             except Exception as e:
                 print(f"  [ERR] Failed to install {filename}: {e}")
