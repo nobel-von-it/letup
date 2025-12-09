@@ -134,6 +134,9 @@ cpu_idle_prev=${read_cpu_vals[1]}
 while true; do
     sleep $SLEEP
 
+
+    layout=$(setxkbmap -query | awk '/layout/ {print toupper($2)}')
+
     # CPU %
     read_cpu_vals=($(read_cpu))
     cpu_total=${read_cpu_vals[0]}
@@ -171,7 +174,7 @@ while true; do
     now=$(date "+%F %R")
 
     # FULL TEXT
-    full="CPU ${cpu_pct}% ${cpu_temp}°C | RAM ${ram}% | Disk ${disk} | ${rx_h} / ${tx_h} WiFi/BT ${wifi_temp}°C | Bat ${bat} | ${now}"
+    full="${layout} | CPU ${cpu_pct}% ${cpu_temp}°C | RAM ${ram}% | Disk ${disk} | ${rx_h} / ${tx_h} WiFi/BT ${wifi_temp}°C | Bat ${bat} | ${now}"
 
     # ESCAPE JSON
     esc=$(printf '%s' "$full" | sed -e 's/\\/\\\\/g' -e 's/"/\\"/g')
