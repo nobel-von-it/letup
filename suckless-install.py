@@ -13,7 +13,7 @@ from typing import Any, cast
 
 # Directory containing your custom config files (relative to this script).
 # Expected format: dwm-config.def.h, st-config.def.h, etc.
-CONFIGS_SRC_DIR = "./configs"
+CONFIGS_SRC_DIR = "./configs/dwm"
 DIST_DEFAULT_DIR = "./.suckless-srcs"
 
 # Target directory for user scripts
