@@ -42,7 +42,7 @@ PATCHES = [
 # List of scripts to download: (category/name, url)
 # These will be downloaded, chmod +x, and moved to ~/.local/bin/
 SCRIPTS = [
-    ("dmenu", "https://tools.suckless.org/dmenu/scripts/dmenu_run_with_command"),
+    ("dmenu", "https://tools.suckless.org/dmenu/scripts/switch"),
     # Note: Ensure URLs point to the raw file, not an HTML page.
     # Added a valid example URL for demonstration:
     ("dmenu_websearch", "http://efe.kim/files/scripts/dmenu_websearch"),
@@ -147,6 +147,15 @@ def link_config(work_dir: str, tool_name: str) -> None:
 def compile_and_install(work_dir: str, tool_name: str) -> None:
     """Executes 'sudo make install clean -B'."""
     print(f"[{tool_name}] Compiling and installing (sudo required)...")
+
+    if tool_name == "dwm":
+        print(f"[{tool_name}] Fixing Xutf8TextListToTextProperty types...")
+        sed_cmd = (
+            f"sed -i 's/Xutf8TextListToTextProperty(dpy, tags,/"
+            f"Xutf8TextListToTextProperty(dpy, (char **)tags,/' {os.path.join(work_dir, 'dwm.c')}"
+        )
+        _ = os.system(sed_cmd)
+
     # -B : Always make unconditionally
     cmd = f"cd {work_dir} && sudo make install clean -B"
     ret = os.system(cmd)
