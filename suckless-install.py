@@ -17,7 +17,7 @@ CONFIGS_SRC_DIR = "./configs/dwm"
 DIST_DEFAULT_DIR = "./.suckless-srcs"
 
 # Target directory for user scripts
-LOCAL_BIN_DIR = os.path.expanduser("~/.local/bin")
+LOCAL_BIN_DIR = "/usr/local/bin"
 
 # List of programs: (path_on_server, version)
 FILES = [
@@ -148,7 +148,7 @@ def link_home(tool_name: str) -> None:
     print(f"[{tool_name}] Linking to {Path.home()}")
     src_conf_path = Path.absolute(Path(CONFIGS_SRC_DIR) / tool_name)
     dest_conf_path = Path.home() / tool_name
-    _ = os.system(f"ln -s {src_conf_path} {dest_conf_path}")
+    os.symlink(src_conf_path, dest_conf_path)
 
 
 def compile_and_install(work_dir: str, tool_name: str) -> None:
