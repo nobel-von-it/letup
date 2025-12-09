@@ -1,0 +1,8 @@
+base-devel
+libx11
+libxft
+libxinerama
+libxrandr
+xorg-server
+xorg-xinit
+flameshot
