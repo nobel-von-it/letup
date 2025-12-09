@@ -1,0 +1,142 @@
+/* == MELANCHOLY PALETTE == */
+@define-color bg #1a1c23;
+@define-color fg #aab1be;
+
+@define-color red #b07b7b;
+@define-color green #8da18d;
+@define-color yellow #bfb48f;
+@define-color blue #7a8ca3;
+@define-color magenta #9e8ba3;
+@define-color cyan #889ca6;
+
+@define-color grey #4b5263;
+@define-color dark_grey #2c323c;
+
+* {
+    border: none;
+    font-family: "JetBrainsMono Nerd Font", monospace;
+    font-size: 13px;
+    font-weight: 600;
+    /* Полужирный для читаемости */
+}
+
+window#waybar {
+    background-color: @bg;
+    color: @fg;
+    border-bottom: 2px solid @dark_grey;
+    /* Линия снизу */
+}
+
+/* -- Workspaces -- */
+#workspaces button {
+    padding: 0 8px;
+    color: @grey;
+    border-radius: 0;
+}
+
+#workspaces button.active {
+    color: @blue;
+    background-color: @dark_grey;
+    border-bottom: 2px solid @blue;
+}
+
+#workspaces button:hover {
+    background-color: @dark_grey;
+    color: @fg;
+}
+
+/* -- Modules Right -- */
+/* Добавляем разделитель " | " между модулями как в твоем скрипте */
+.modules-right>widget>label {
+    padding: 0 10px;
+    margin: 0;
+}
+
+/* Общий цвет для всех модулей */
+#custom-gpu,
+#cpu,
+#memory,
+#disk,
+#network,
+#custom-wifitemp,
+#battery,
+#language,
+#clock {
+    color: @fg;
+    background-color: @bg;
+    padding: 0 8px;
+    border-left: 1px solid @dark_grey;
+    /* Разделитель */
+}
+
+/* -- Цветовые акценты (опционально, для значений) -- */
+
+/* Раскладка */
+#language {
+    color: @magenta;
+    padding-left: 15px;
+}
+
+/* GPU / CPU */
+#custom-gpu {
+    color: @blue;
+}
+
+#cpu {
+    color: @blue;
+}
+
+/* RAM */
+#memory {
+    color: @cyan;
+}
+
+/* Disk */
+#disk {
+    color: @yellow;
+}
+
+/* Network */
+#network {
+    color: @green;
+}
+
+#custom-wifitemp {
+    color: @green;
+}
+
+/* Battery */
+#battery {
+    color: @fg;
+}
+
+#battery.charging {
+    color: @green;
+}
+
+#battery.warning:not(.charging) {
+    color: @yellow;
+}
+
+#battery.critical:not(.charging) {
+    color: @red;
+    animation-name: blink;
+    animation-duration: 0.5s;
+    animation-iteration-count: infinite;
+    animation-direction: alternate;
+}
+
+/* Clock */
+#clock {
+    color: @blue;
+    background-color: @bg;
+    border-left: none;
+    /* У часов слева не нужен бордер, если они по центру */
+}
+
+@keyframes blink {
+    to {
+        background-color: @red;
+        color: @bg;
+    }
+}

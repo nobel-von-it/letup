@@ -1,0 +1,136 @@
+// ~/.config/niri/config.kdl
+
+input {
+    keyboard {
+        xkb {
+            layout "us,ru"
+            options "grp:win_space_toggle"
+        }
+    }
+    touchpad {
+        tap
+        natural-scroll
+    }
+}
+
+output "eDP-1" {
+    // Укажи свой монитор, если нужно scale
+    scale 1.0
+}
+
+layout {
+    // Отступы
+    gaps 12
+    
+    // Центрирование окна
+    center-focused-column "never"
+
+    preset-column-widths {
+        proportion 0.33333
+        proportion 0.5
+        proportion 0.66667
+    }
+
+    // == 1. ПАЛИТРА MELANCHOLY ==
+    // Акцент (Blue из конфига): #7a8ca3
+    // Неактивный (Dark Grey): #2c323c
+    // Ошибка (Red): #b07b7b
+
+    focus-ring {
+        off // Выключаем кольцо фокуса, оставим только бордер для минимализма
+    }
+
+    border {
+        on
+        width 2
+        active-color "#7a8ca3"
+        inactive-color "#2c323c"
+    }
+    
+    // Тень (опционально)
+    shadow {
+        on
+        softness 30
+        spread 5
+        color "#1a1c2380" // bg + прозрачность
+    }
+}
+
+// == АВТОЗАПУСК ==
+spawn-at-startup "waybar"
+spawn-at-startup "mako"
+spawn-at-startup "swww-daemon"
+// spawn-at-startup "xwayland-satellite" // Если нужен xwayland
+
+// == 4. ЛОГИКА ВОРКСПЕЙСОВ ==
+// Мы называем их именами, чтобы привязать приложения
+
+// Правила для приложений
+window-rule {
+    // Workspace 1: General (Browser) - открывается по умолчанию
+    match app-id=r"firefox|chromium|brave"
+    open-on-workspace "1-main"
+}
+
+window-rule {
+    // Workspace 2: Editors (Term, Obsidian, Office)
+    match app-id=r"alacritty|kitty|obsidian|soffice|libreoffice.*"
+    open-on-workspace "2-work"
+}
+
+window-rule {
+    // Workspace 3: Messengers
+    match app-id=r"org.telegram.desktop|telegram|thunderbird|discord"
+    open-on-workspace "3-chat"
+}
+
+window-rule {
+    // Workspace 4: System / Optional
+    match app-id=r"pavucontrol|easyeffects|nm-connection-editor|blueman-manager|amnezia.*|koala.*"
+    open-on-workspace "4-sys"
+}
+
+// Скругления углов
+window-rule {
+    geometry-corner-radius 8
+    clip-to-geometry true
+}
+
+// == БИНДЫ ==
+binds {
+    // Основные
+    Mod+Shift+Slash { show-hotkey-overlay; }
+    Mod+Return { spawn "alacritty"; }
+    Mod+P { spawn "fuzzel"; }
+    Mod+C { close-window; }
+    Mod+Shift+E { quit; }
+
+    // Навигация внутри воркспейса (влево-вправо)
+    Mod+Left  { focus-column-left; }
+    Mod+Right { focus-column-right; }
+    Mod+H     { focus-column-left; }
+    Mod+L     { focus-column-right; }
+
+    // Перемещение окон внутри воркспейса
+    Mod+Shift+Left  { move-column-left; }
+    Mod+Shift+Right { move-column-right; }
+    Mod+Shift+H     { move-column-left; }
+    Mod+Shift+L     { move-column-right; }
+
+    // == НАВИГАЦИЯ ПО "ЭТАЖАМ" (Воркспейсам) ==
+    // Используем J/K (вниз/вверх) для переключения воркспейсов
+    Mod+J { focus-workspace-down; }
+    Mod+K { focus-workspace-up; }
+    
+    Mod+WheelScrollDown { focus-workspace-down; }
+    Mod+WheelScrollUp   { focus-workspace-up; }
+
+    // Перемещение окна на воркспейс ниже/выше
+    Mod+Shift+J { move-window-to-workspace-down; }
+    Mod+Shift+K { move-window-to-workspace-up; }
+
+    // Управление звуком
+    XF86AudioRaiseVolume allow-when-locked=true { spawn "wpctl" "set-volume" "@DEFAULT_AUDIO_SINK@" "0.1+"; }
+    XF86AudioLowerVolume allow-when-locked=true { spawn "wpctl" "set-volume" "@DEFAULT_AUDIO_SINK@" "0.1-"; }
+    XF86AudioMute        allow-when-locked=true { spawn "wpctl" "set-mute" "@DEFAULT_AUDIO_SINK@" "toggle"; }
+}

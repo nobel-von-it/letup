@@ -1,0 +1,12 @@
+niri
+xorg-xwayland
+waybar
+mako
+fuzzel
+alacritty
+swww
+
+grim
+slurp
+libnotify
+polkit-gnome
