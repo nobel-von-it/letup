@@ -9,11 +9,13 @@ static const char *fonts[] = {"JetBrainsMonoNerdFont:size=10"};
 static const char dmenufont[] = "JetBrainsMonoNerdFont:size=10";
 
 /* PALETTE: Melancholy adaptation */
-static const char col_bg[] = "#1a1c23";          /* Background */
-static const char col_border_norm[] = "#2c323c"; /* Dark Grey (Inactive Border) */
-static const char col_fg[] = "#aab1be";          /* Foreground */
-static const char col_accent[] = "#7a8ca3";      /* Blue (Active Border/Bar) */
-static const char col_sel_fg[] = "#1a1c23";      /* Text on selection (Dark for contrast) */
+static const char col_bg[] = "#1a1c23"; /* Background */
+static const char col_border_norm[] =
+    "#2c323c";                              /* Dark Grey (Inactive Border) */
+static const char col_fg[] = "#aab1be";     /* Foreground */
+static const char col_accent[] = "#7a8ca3"; /* Blue (Active Border/Bar) */
+static const char col_sel_fg[] =
+    "#1a1c23"; /* Text on selection (Dark for contrast) */
 
 static const char *colors[][3] = {
     /*               fg          bg          border   */
@@ -35,10 +37,12 @@ static const Rule rules[] = {
 };
 
 /* layout(s) */
-static const float mfact = 0.55;     /* factor of master area size [0.05..0.95] */
-static const int nmaster = 1;        /* number of clients in master area */
-static const int resizehints = 1;    /* 1 means respect size hints in tiled resizals */
-static const int lockfullscreen = 1; /* 1 will force focus on the fullscreen window */
+static const float mfact = 0.55; /* factor of master area size [0.05..0.95] */
+static const int nmaster = 1;    /* number of clients in master area */
+static const int resizehints =
+    1; /* 1 means respect size hints in tiled resizals */
+static const int lockfullscreen =
+    1; /* 1 will force focus on the fullscreen window */
 
 static const Layout layouts[] = {
     /* symbol     arrange function */
@@ -49,30 +53,32 @@ static const Layout layouts[] = {
 
 /* key definitions */
 #define MODKEY Mod4Mask
-#define TAGKEYS(KEY, TAG)                                                                          \
-    {MODKEY, KEY, view, {.ui = 1 << TAG}},                                                         \
-        {MODKEY | ControlMask, KEY, toggleview, {.ui = 1 << TAG}},                                 \
-        {MODKEY | ShiftMask, KEY, tag, {.ui = 1 << TAG}},                                          \
-        {MODKEY | ControlMask | ShiftMask, KEY, toggletag, {.ui = 1 << TAG}},
+#define TAGKEYS(KEY, TAG)                                                      \
+  {MODKEY, KEY, view, {.ui = 1 << TAG}},                                       \
+      {MODKEY | ControlMask, KEY, toggleview, {.ui = 1 << TAG}},               \
+      {MODKEY | ShiftMask, KEY, tag, {.ui = 1 << TAG}},                        \
+      {MODKEY | ControlMask | ShiftMask, KEY, toggletag, {.ui = 1 << TAG}},
 
 /* helper for spawning shell commands in the pre dwm-5.0 fashion */
-#define SHCMD(cmd)                                                                                 \
-    {                                                                                              \
-        .v = (const char *[]) { "/bin/sh", "-c", cmd, NULL }                                       \
-    }
+#define SHCMD(cmd)                                                             \
+  {                                                                            \
+    .v = (const char *[]) { "/bin/sh", "-c", cmd, NULL }                       \
+  }
 
 /* commands */
-static char dmenumon[2] = "0"; /* component of dmenucmd, manipulated in spawn() */
+static char dmenumon[2] =
+    "0"; /* component of dmenucmd, manipulated in spawn() */
 
 /* Обновленный dmenu с твоими цветами */
-static const char *dmenucmd[] = {"dmenu_run", "-m",       dmenumon, "-fn",
-                                 dmenufont,   "-nb",      col_bg, /* Normal Background */
-                                 "-nf",       col_fg,             /* Normal Foreground */
-                                 "-sb",       col_accent,         /* Selected Background */
-                                 "-sf",       col_sel_fg,         /* Selected Foreground */
-                                 NULL};
+static const char *dmenucmd[] = {
+    "dmenu_run", "-m",       dmenumon, "-fn",
+    dmenufont,   "-nb",      col_bg, /* Normal Background */
+    "-nf",       col_fg,             /* Normal Foreground */
+    "-sb",       col_accent,         /* Selected Background */
+    "-sf",       col_sel_fg,         /* Selected Foreground */
+    NULL};
 
-static const char *termcmd[] = {"st", NULL};
+static const char *termcmd[] = {"st", "-e", "sh", "-c", "tmux a || tmux", NULL};
 
 /* Команда для скриншотов (аналог grim+slurp+swappy) */
 static const char *flameshotcmd[] = {"flameshot", "gui", NULL};
@@ -112,15 +118,16 @@ static const Key keys[] = {
     {MODKEY, XK_period, focusmon, {.i = +1}},
     {MODKEY | ShiftMask, XK_comma, tagmon, {.i = -1}},
     {MODKEY | ShiftMask, XK_period, tagmon, {.i = +1}},
-    TAGKEYS(XK_1, 0) TAGKEYS(XK_2, 1) TAGKEYS(XK_3, 2) TAGKEYS(XK_4, 3) TAGKEYS(XK_5, 4)
-        TAGKEYS(XK_6, 5) TAGKEYS(XK_7, 6) TAGKEYS(XK_8, 7)
+    TAGKEYS(XK_1, 0) TAGKEYS(XK_2, 1) TAGKEYS(XK_3, 2) TAGKEYS(XK_4, 3)
+        TAGKEYS(XK_5, 4) TAGKEYS(XK_6, 5) TAGKEYS(XK_7, 6) TAGKEYS(XK_8, 7)
             TAGKEYS(XK_9, 8){MODKEY | ShiftMask, XK_q, quit, {0}},
 };
 
 /* button definitions */
-/* click can be ClkTagBar, ClkLtSymbol, ClkStatusText, ClkWinTitle, ClkClientWin, or ClkRootWin */
+/* click can be ClkTagBar, ClkLtSymbol, ClkStatusText, ClkWinTitle,
+ * ClkClientWin, or ClkRootWin */
 static const Button buttons[] = {
-    /* click                event mask      button          function        argument */
+    /* click                event mask      button          function argument */
     {ClkLtSymbol, 0, Button1, setlayout, {0}},
     {ClkLtSymbol, 0, Button3, setlayout, {.v = &layouts[2]}},
     {ClkWinTitle, 0, Button2, zoom, {0}},
