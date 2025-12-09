@@ -6,6 +6,7 @@ import glob
 import os
 import shutil
 from collections.abc import Coroutine
+from pathlib import Path
 from typing import Any, cast
 
 # --- CONFIGURATION ---
@@ -125,12 +126,12 @@ def apply_patches(work_dir: str, tool_name: str) -> None:
 def link_config(work_dir: str, tool_name: str) -> None:
     """Searches for {tool_name}-config.def.h in the configs folder and symlinks it."""
     custom_conf_name = f"{tool_name}-config.def.h"
-    custom_conf_path = os.path.abspath(os.path.join(CONFIGS_SRC_DIR, custom_conf_name))
-    target_conf = os.path.join(work_dir, "config.def.h")
+    custom_conf_path = Path.absolute(Path(CONFIGS_SRC_DIR) / custom_conf_name)
+    target_conf = Path(work_dir) / "config.def.h"
 
     if os.path.exists(custom_conf_path):
         print(f"[{tool_name}] Found custom config: {custom_conf_name}")
-        if os.path.exists(target_conf) or os.path.islink(target_conf):
+        if target_conf.exists() or target_conf.is_symlink():
             os.remove(target_conf)
         try:
             os.symlink(custom_conf_path, target_conf)
@@ -141,6 +142,13 @@ def link_config(work_dir: str, tool_name: str) -> None:
         print(
             f"[{tool_name}] Custom config not found ({custom_conf_path}), using default."
         )
+
+
+def link_home(tool_name: str) -> None:
+    print(f"[{tool_name}] Linking to {Path.home()}")
+    src_conf_path = Path.absolute(Path(CONFIGS_SRC_DIR) / tool_name)
+    dest_conf_path = Path.home() / tool_name
+    _ = os.system(f"ln -s {src_conf_path} {dest_conf_path}")
 
 
 def compile_and_install(work_dir: str, tool_name: str) -> None:
@@ -318,7 +326,10 @@ async def main() -> None:
         full_work_dir = os.path.join(dest_dir, folder_name)
         print(f"\n--- Processing {tool_name} ({folder_name}) ---")
         apply_patches(full_work_dir, tool_name)
-        link_config(full_work_dir, tool_name)
+        if tool_name == ".xinitrc":
+            link_home(tool_name)
+        else:
+            link_config(full_work_dir, tool_name)
         compile_and_install(full_work_dir, tool_name)
 
     print("\n=== All operations completed ===")

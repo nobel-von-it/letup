@@ -3,3 +3,4 @@
 configs/tmux/plugins/
 
 test-*.py
+.suckless-srcs/
