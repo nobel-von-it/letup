@@ -26,6 +26,7 @@ CONFIG_NAMES = [
     "niri",
     "waybar",
     "fuzzel",
+    "mako",
 ]
 
 
