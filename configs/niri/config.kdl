@@ -1,5 +1,7 @@
 // ~/.config/niri/config.kdl
 
+prefer-no-csd
+
 input {
     keyboard {
         xkb {
@@ -14,30 +16,24 @@ input {
 }
 
 output "eDP-1" {
-    // Укажи свой монитор, если нужно scale
     scale 1.0
 }
 
 layout {
-    // Отступы
-    gaps 12
+    gaps 2
     
-    // Центрирование окна
     center-focused-column "never"
 
     preset-column-widths {
         proportion 0.33333
         proportion 0.5
         proportion 0.66667
+
+        proportion 1.0
     }
 
-    // == 1. ПАЛИТРА MELANCHOLY ==
-    // Акцент (Blue из конфига): #7a8ca3
-    // Неактивный (Dark Grey): #2c323c
-    // Ошибка (Red): #b07b7b
-
     focus-ring {
-        off // Выключаем кольцо фокуса, оставим только бордер для минимализма
+        off 
     }
 
     border {
@@ -47,12 +43,11 @@ layout {
         inactive-color "#2c323c"
     }
     
-    // Тень (опционально)
     shadow {
         on
         softness 30
         spread 5
-        color "#1a1c2380" // bg + прозрачность
+        color "#1a1c2380" 
     }
 }
 
@@ -60,33 +55,59 @@ layout {
 spawn-at-startup "waybar"
 spawn-at-startup "mako"
 spawn-at-startup "swww-daemon"
-// spawn-at-startup "xwayland-satellite" // Если нужен xwayland
+spawn-at-startup "xwayland-satellite"
 
-// == 4. ЛОГИКА ВОРКСПЕЙСОВ ==
-// Мы называем их именами, чтобы привязать приложения
+// Форсируем темную тему для GTK приложений (и браузеров)
+spawn-at-startup "gsettings" "set" "org.gnome.desktop.interface" "color-scheme" "prefer-dark"
+spawn-at-startup "gsettings" "set" "org.gnome.desktop.interface" "gtk-theme" "Adwaita-dark"
 
-// Правила для приложений
+
+// == ПРАВИЛА ОКОН (WINDOW RULES) ==
+// Важно: Проверь app-id через команду `niri msg windows`
+
+
+
+
+workspace "4-sys" {
+}
+
+workspace "3-chat" {
+}
+
+workspace "2-work" {
+}
+
+workspace "1-main" {
+}
+
 window-rule {
-    // Workspace 1: General (Browser) - открывается по умолчанию
-    match app-id=r"firefox|chromium|brave"
+    // Браузеры
+    match app-id=r"firefox|chromium|brave|google-chrome"
     open-on-workspace "1-main"
 }
 
 window-rule {
-    // Workspace 2: Editors (Term, Obsidian, Office)
-    match app-id=r"alacritty|kitty|obsidian|soffice|libreoffice.*"
+    match app-id=r"firefox"
+    open-maximized true
+}
+
+window-rule {
+    // Терминалы и редакторы
+    // Alacritty часто имеет app-id "Alacritty" (с большой буквы), проверь!
+    match app-id=r"Alacritty"
     open-on-workspace "2-work"
 }
 
 window-rule {
-    // Workspace 3: Messengers
-    match app-id=r"org.telegram.desktop|telegram|thunderbird|discord"
+    // Мессенджеры
+    // Telegram обычно org.telegram.desktop
+    match app-id=r"org.telegram.desktop|telegram|thunderbird|discord|vesktop"
     open-on-workspace "3-chat"
 }
 
 window-rule {
-    // Workspace 4: System / Optional
-    match app-id=r"pavucontrol|easyeffects|nm-connection-editor|blueman-manager|amnezia.*|koala.*"
+    // Системные
+    match app-id=r"org.pulseaudio.pavucontrol|com.github.wwmm.easyeffects|koala-clash"
     open-on-workspace "4-sys"
 }
 
@@ -98,38 +119,52 @@ window-rule {
 
 // == БИНДЫ ==
 binds {
-    // Основные
     Mod+Shift+Slash { show-hotkey-overlay; }
-    Mod+Return { spawn "alacritty"; }
+    Mod+Return { spawn "alacritty" "-e" "sh" "-c" "tmux a || tmux"; }
     Mod+P { spawn "fuzzel"; }
     Mod+C { close-window; }
     Mod+Shift+E { quit; }
 
-    // Навигация внутри воркспейса (влево-вправо)
+    Print { spawn "sh" "-c" "grim -g \"$(slurp)\" - | swappy -f -"; }
+
+    // == МАКСИМИЗАЦИЯ ОКНА (Твой запрос) ==
+    // Это развернет окно на всю ширину экрана, но НЕ перекроет Waybar.
+    Mod+F { maximize-column; }
+    
+    // А это (Shift+F) сделает полный экран (перекроет Waybar, как в играх)
+    Mod+Shift+F { fullscreen-window; }
+
+    // Навигация
     Mod+Left  { focus-column-left; }
     Mod+Right { focus-column-right; }
     Mod+H     { focus-column-left; }
     Mod+L     { focus-column-right; }
 
-    // Перемещение окон внутри воркспейса
+    // Перемещение окон
     Mod+Shift+Left  { move-column-left; }
     Mod+Shift+Right { move-column-right; }
     Mod+Shift+H     { move-column-left; }
     Mod+Shift+L     { move-column-right; }
 
-    // == НАВИГАЦИЯ ПО "ЭТАЖАМ" (Воркспейсам) ==
-    // Используем J/K (вниз/вверх) для переключения воркспейсов
+    // Воркспейсы
     Mod+J { focus-workspace-down; }
     Mod+K { focus-workspace-up; }
-    
     Mod+WheelScrollDown { focus-workspace-down; }
     Mod+WheelScrollUp   { focus-workspace-up; }
 
-    // Перемещение окна на воркспейс ниже/выше
     Mod+Shift+J { move-window-to-workspace-down; }
     Mod+Shift+K { move-window-to-workspace-up; }
+    // Полезный бинд: перекинуть окно на конкретный воркспейс цифрами
+    Mod+1 { focus-workspace "1-main"; }
+    Mod+2 { focus-workspace "2-work"; }
+    Mod+3 { focus-workspace "3-chat"; }
+    Mod+4 { focus-workspace "4-sys"; }
+    Mod+Shift+1 { move-window-to-workspace "1-main"; }
+    Mod+Shift+2 { move-window-to-workspace "2-work"; }
+    Mod+Shift+3 { move-window-to-workspace "3-chat"; }
+    Mod+Shift+4 { move-window-to-workspace "4-sys"; }
 
-    // Управление звуком
+    // Звук
     XF86AudioRaiseVolume allow-when-locked=true { spawn "wpctl" "set-volume" "@DEFAULT_AUDIO_SINK@" "0.1+"; }
     XF86AudioLowerVolume allow-when-locked=true { spawn "wpctl" "set-volume" "@DEFAULT_AUDIO_SINK@" "0.1-"; }
     XF86AudioMute        allow-when-locked=true { spawn "wpctl" "set-mute" "@DEFAULT_AUDIO_SINK@" "toggle"; }
