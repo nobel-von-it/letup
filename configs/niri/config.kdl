@@ -57,6 +57,19 @@ spawn-at-startup "mako"
 spawn-at-startup "swww-daemon"
 spawn-at-startup "xwayland-satellite"
 
+
+// == АВТОЗАПУСК БЛОКИРОВЩИКА ==
+// -w ждет завершения команд
+// timeout 300 -> лочим экран
+// timeout 330 -> гасим монитор (niri msg action power-off-monitors)
+// resume -> если проснулись, включаем монитор обратно (хотя мышь и так его включит)
+// before-sleep -> лочим экран перед сном (закрытием крышки)
+
+spawn-at-startup "swayidle" "-w" \
+    "timeout" "300" "swaylock -f" \
+    "timeout" "330" "niri msg action power-off-monitors" \
+    "before-sleep" "swaylock -f"
+
 // Форсируем темную тему для GTK приложений (и браузеров)
 spawn-at-startup "gsettings" "set" "org.gnome.desktop.interface" "color-scheme" "prefer-dark"
 spawn-at-startup "gsettings" "set" "org.gnome.desktop.interface" "gtk-theme" "Adwaita-dark"
