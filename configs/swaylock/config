@@ -1,0 +1,47 @@
+# ~/.config/swaylock/config
+
+# == ВНЕШНИЙ ВИД ==
+# Делает скриншот текущего экрана и блюрит его (нужен swaylock-effects)
+screenshots
+clock
+indicator
+indicator-radius=100
+indicator-thickness=7
+effect-blur=7x5
+effect-vignette=0.5:0.5
+
+# == ЦВЕТА MELANCHOLY ==
+# Bg (если скриншот не сработает)
+color=1a1c23
+
+# Кольцо (основное) - Blue #7a8ca3
+ring-color=7a8ca3
+key-hl-color=8da18d  # Green (при нажатии)
+
+# Внутри кольца
+inside-color=1a1c23  # Dark Grey (фон)
+line-color=1a1c23    # Скрываем линию разделения
+
+# Текст
+text-color=aab1be      # FG
+layout-text-color=aab1be
+
+# Ошибки (Неверный пароль) - Red #b07b7b
+ring-wrong-color=b07b7b
+text-wrong-color=b07b7b
+inside-wrong-color=1a1c23
+
+# Очистка (Backspace) - Yellow #bfb48f
+ring-clear-color=bfb48f
+text-clear-color=bfb48f
+inside-clear-color=1a1c23
+
+# Верификация (проверка) - Magenta #9e8ba3
+ring-ver-color=9e8ba3
+text-ver-color=9e8ba3
+inside-ver-color=1a1c23
+
+# == ПОВЕДЕНИЕ ==
+daemonize
+ignore-empty-password
+show-failed-attempts

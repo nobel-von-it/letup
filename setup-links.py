@@ -21,6 +21,7 @@ CONFIG_NAMES = [
     "fish",
     "zed",
     "tmux",
+    "swaylock",
     "sway",
     "easyeffects",
     "niri",
