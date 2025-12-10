@@ -21,54 +21,45 @@ anchor=top-right
 layer=overlay
 
 # == 2. ЦВЕТОВАЯ ПАЛИТРА MELANCHOLY ==
-# Фон: bg (#1a1c23) + небольшая прозрачность (e6 = ~90%)
+
+# Фон: bg (#1a1c23) + небольшая прозрачность (e6)
 background-color=#1a1c23e6
 
 # Текст: fg (#aab1be)
 text-color=#aab1be
 
-# Бордер: blue (#7a8ca3) - акцент, как в Niri
+# Бордер: blue (#7a8ca3)
 border-color=#7a8ca3
 
-# Прогресс-бар (таймер исчезновения)
-# Цвет полоски: blue (#7a8ca3)
+# Прогресс-бар
 progress-color=#7a8ca3
-# Фон полоски: dark_grey (#2c323c)
-source=overlaid
 
 # == 3. ГРУППИРОВКА ==
-# Если уведомлений много, они группируются
 group-by=app-name
 format=<b>%s</b>\n%b
 
 # == 4. УРОВНИ ВАЖНОСТИ (URGENCY) ==
 
-# [LOW] - Низкий приоритет
-# Используем grey (#4b5263) для бордера, чтобы не отвлекало
+# [LOW] - Низкий приоритет (Grey)
 [urgency=low]
 border-color=#4b5263
 text-color=#4b5263
 default-timeout=2000
 
-# [NORMAL] - Обычные уведомления
-# Стандартные цвета (Blue акцент)
+# [NORMAL] - Обычные (Blue)
 [urgency=normal]
 border-color=#7a8ca3
 
-# [CRITICAL] - Критические ошибки
-# Используем red (#b07b7b) из палитры
+# [CRITICAL] - Критические (Red)
 [urgency=critical]
 border-color=#b07b7b
 text-color=#b07b7b
 default-timeout=0
-# Критические висят, пока не закроешь
 
-# == 5. СПЕЦИАЛЬНЫЕ ПРАВИЛА (Опционально) ==
+# == 5. СПЕЦИАЛЬНЫЕ ПРАВИЛА ==
 
-# Пример: Сделать скриншоты (Grim) с желтой рамкой (#bfb48f)
 [app-name="grim"]
 border-color=#bfb48f
 
-# Пример: Telegram чуть ярче
 [app-name="Telegram Desktop"]
 border-color=#7a8ca3
