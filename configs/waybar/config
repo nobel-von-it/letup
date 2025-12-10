@@ -2,25 +2,21 @@
     "layer": "top",
     "position": "top",
     "height": 34,
-    "spacing": 0, // Убираем стандартные отступы, настроим в CSS
-    
-    // Левая часть: Воркспейсы
+    "spacing": 0,
+
     "modules-left": ["niri/workspaces"],
-    
-    // Центр: Часы
     "modules-center": ["clock"],
-    
-    // Правая часть: Твоя статистика
     "modules-right": [
         "niri/language",
         "cpu",
         "memory",
         "disk",
-        "group/connection", // Группа: Скорость + Температура WiFi
-        "battery"
+        "group/connection",
+        "pulseaudio",
+        "battery",
+        "tray",
     ],
 
-    // == ВОРКСПЕЙСЫ ==
     "niri/workspaces": {
         "format": "{icon}",
         "format-icons": {
@@ -32,37 +28,47 @@
         }
     },
 
-    // == РАСКЛАДКА ==
     "niri/language": {
         "format": "{}",
         "format-en": "US",
         "format-ru": "RU"
     },
 
-    // == CPU (Загрузка + Температура) ==
+    "tray": {
+        "icon-size": 18,
+        "spacing": 8
+    },
+
+    "pulseaudio": {
+        "format": "V {volume}%",
+        "format-muted": "V MUT",
+        "format-bluetooth": "V {volume}% ",
+        "scroll-step": 5,
+        "on-click": "pactl set-sink-mute @DEFAULT_SINK@ toggle",
+        "on-click-right": "pavucontrol",
+        "tooltip": false
+    },
+
     "cpu": {
         "interval": 2,
         "format": "CPU {usage}% {icon}",
-        "format-icons": ["", "🔥"], // Огонек если нагрузка высокая
+        "format-icons": ["", "🔥"],
         "tooltip": true
     },
 
-    // == RAM ==
     "memory": {
         "interval": 5,
         "format": "RAM {percentage}%",
         "tooltip-format": "Used: {used}GiB / Total: {total}GiB"
     },
 
-    // == DISK ==
     "disk": {
         "interval": 30,
-        "format": "Disk {specific_used:0.1f}G/{total}",
+        "format": "D {specific_used:0.1f}G",
         "unit": "GB",
         "path": "/"
     },
 
-    // == СЕТЬ (Группа) ==
     "group/connection": {
         "orientation": "horizontal",
         "modules": ["network", "custom/wifitemp"]
@@ -70,7 +76,6 @@
 
     "network": {
         "interval": 2,
-        // Формат как в скрипте: Down / Up
         "format-wifi": "{bandwidthDownBytes} / {bandwidthUpBytes}",
         "format-ethernet": "{bandwidthDownBytes} / {bandwidthUpBytes}",
         "format-disconnected": "OFF",
@@ -80,26 +85,22 @@
 
     "custom/wifitemp": {
         "interval": 5,
-        // Однострочник, ищущий thermal_zone iwlwifi (аналог твоего скрипта)
         "exec": "for tz in /sys/class/thermal/thermal_zone*; do if grep -q 'iwlwifi' \"$tz/type\"; then awk '{printf \"%.0f°C\", $1/1000}' \"$tz/temp\"; break; fi; done",
         "format": "WiFi {}"
     },
 
-    // == БАТАРЕЯ ==
     "battery": {
         "interval": 5,
         "states": {
             "warning": 30,
             "critical": 15
         },
-        // Формат: % Статус Ватты
         "format": "Bat {capacity}% {icon} {power:0.1f}W",
         "format-charging": "Bat {capacity}%  {power:0.1f}W",
         "format-plugged": "Bat {capacity}% ",
-        "format-icons": ["Dis", "Dis", "Dis", "Dis", "Dis"] // Используем текст "Dis" вместо иконок, чтобы было как в скрипте, или убери icons и оставь текст
+        "format-icons": ["Dis", "Dis", "Dis", "Dis", "Dis"]
     },
 
-    // == ЧАСЫ ==
     "clock": {
         "format": "{:%H:%M  %F}",
         "tooltip-format": "<tt>{calendar}</tt>"
