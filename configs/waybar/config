@@ -52,7 +52,7 @@
     "cpu": {
         "interval": 2,
         "format": "CPU {usage}% {icon}",
-        "format-icons": ["", "🔥"],
+        "format-icons": ["", "!!"],
         "tooltip": true
     },
 
