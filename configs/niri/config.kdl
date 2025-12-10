@@ -21,7 +21,6 @@ output "eDP-1" {
 
 layout {
     gaps 2
-    
     center-focused-column "never"
 
     preset-column-widths {
@@ -57,6 +56,8 @@ spawn-at-startup "mako"
 spawn-at-startup "swww-daemon"
 spawn-at-startup "xwayland-satellite"
 
+spawn-at-startup "syncthing" "--no-browser"
+
 
 // == АВТОЗАПУСК БЛОКИРОВЩИКА ==
 // -w ждет завершения команд
@@ -66,9 +67,10 @@ spawn-at-startup "xwayland-satellite"
 // before-sleep -> лочим экран перед сном (закрытием крышки)
 
 spawn-at-startup "swayidle" "-w" \
-    "timeout" "300" "swaylock -f" \
+    "timeout" "300" "sh -c 'playerctl pause; swaylock -f'" \
     "timeout" "330" "niri msg action power-off-monitors" \
-    "before-sleep" "swaylock -f"
+    "resume" "niri msg action power-on-monitors" \
+    "before-sleep" "sh -c 'playerctl pause; swaylock -f'"
 
 // Форсируем темную тему для GTK приложений (и браузеров)
 spawn-at-startup "gsettings" "set" "org.gnome.desktop.interface" "color-scheme" "prefer-dark"
@@ -81,16 +83,13 @@ spawn-at-startup "gsettings" "set" "org.gnome.desktop.interface" "gtk-theme" "Ad
 
 
 
-workspace "4-sys" {
+workspace "1-main" {
 }
-
-workspace "3-chat" {
-}
-
 workspace "2-work" {
 }
-
-workspace "1-main" {
+workspace "3-chat" {
+}
+workspace "4-sys" {
 }
 
 window-rule {
@@ -100,14 +99,14 @@ window-rule {
 }
 
 window-rule {
-    match app-id=r"firefox"
+    match app-id=r"firefox|obsidian"
     open-maximized true
 }
 
 window-rule {
     // Терминалы и редакторы
     // Alacritty часто имеет app-id "Alacritty" (с большой буквы), проверь!
-    match app-id=r"Alacritty"
+    match app-id=r"Alacritty|obsidian"
     open-on-workspace "2-work"
 }
 
