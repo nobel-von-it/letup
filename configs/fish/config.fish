@@ -67,6 +67,8 @@ set -gx LOCAL_HOST "127.0.0.1:3000"
 
 # Case sensitivity
 set -gx CASE_SENSITIVE false
+set -gx QT_QPA_PLATFORMTHEME qt5ct
+set -gx GTK_THEME Adwaita-dark
 
 # SYM Syncthing
 set -gx SYNCTHING_ADDR "127.0.0.1:8384"
