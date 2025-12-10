@@ -80,9 +80,6 @@ spawn-at-startup "gsettings" "set" "org.gnome.desktop.interface" "gtk-theme" "Ad
 // == ПРАВИЛА ОКОН (WINDOW RULES) ==
 // Важно: Проверь app-id через команду `niri msg windows`
 
-
-
-
 workspace "1-main" {
 }
 workspace "2-work" {
@@ -94,7 +91,7 @@ workspace "4-sys" {
 
 window-rule {
     // Браузеры
-    match app-id=r"firefox|chromium|brave|google-chrome"
+    match app-id=r"firefox|chromium|brave|google-chrome|steam"
     open-on-workspace "1-main"
 }
 
@@ -119,7 +116,7 @@ window-rule {
 
 window-rule {
     // Системные
-    match app-id=r"org.pulseaudio.pavucontrol|com.github.wwmm.easyeffects|koala-clash"
+    match app-id=r"org.pulseaudio.pavucontrol|com.github.wwmm.easyeffects|koala-clash|blueman-manager"
     open-on-workspace "4-sys"
 }
 
@@ -138,12 +135,11 @@ binds {
     Mod+Shift+E { quit; }
 
     Print { spawn "sh" "-c" "grim -g \"$(slurp)\" - | swappy -f -"; }
+    Mod+N { spawn "networkmanager_dmenu"; }
+    Mod+Tab { spawn "~/.config/niri/scripts/window_picker.sh"; }
 
-    // == МАКСИМИЗАЦИЯ ОКНА (Твой запрос) ==
-    // Это развернет окно на всю ширину экрана, но НЕ перекроет Waybar.
     Mod+F { maximize-column; }
     
-    // А это (Shift+F) сделает полный экран (перекроет Waybar, как в играх)
     Mod+Shift+F { fullscreen-window; }
 
     // Навигация
@@ -166,7 +162,7 @@ binds {
 
     Mod+Shift+J { move-window-to-workspace-down; }
     Mod+Shift+K { move-window-to-workspace-up; }
-    // Полезный бинд: перекинуть окно на конкретный воркспейс цифрами
+
     Mod+1 { focus-workspace "1-main"; }
     Mod+2 { focus-workspace "2-work"; }
     Mod+3 { focus-workspace "3-chat"; }
