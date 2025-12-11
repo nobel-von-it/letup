@@ -56,16 +56,6 @@ spawn-at-startup "mako"
 spawn-at-startup "swww-daemon"
 spawn-at-startup "xwayland-satellite"
 
-spawn-at-startup "syncthing" "--no-browser"
-
-
-// == АВТОЗАПУСК БЛОКИРОВЩИКА ==
-// -w ждет завершения команд
-// timeout 300 -> лочим экран
-// timeout 330 -> гасим монитор (niri msg action power-off-monitors)
-// resume -> если проснулись, включаем монитор обратно (хотя мышь и так его включит)
-// before-sleep -> лочим экран перед сном (закрытием крышки)
-
 spawn-at-startup "swayidle" "-w" \
     "timeout" "300" "sh -c 'playerctl pause; swaylock -f'" \
     "timeout" "330" "niri msg action power-off-monitors" \
@@ -76,10 +66,17 @@ spawn-at-startup "swayidle" "-w" \
 spawn-at-startup "gsettings" "set" "org.gnome.desktop.interface" "color-scheme" "prefer-dark"
 spawn-at-startup "gsettings" "set" "org.gnome.desktop.interface" "gtk-theme" "Adwaita-dark"
 
+spawn-at-startup "brightnessctl" "set" "30%"
+spawn-at-startup "syncthing" "--no-browser"
+spawn-at-startup "swww" "img" "~/Pictures/Wallpapers/wanderer-above-the-sea-of-fog-melancholy.png"
+
+spawn-at-startup "alacritty" "-e" "sh" "-c" "tmux a || tmux"
+spawn-at-startup "obsidian"
+spawn-at-startup "firefox"
+spawn-at-startup "koala-clash"
+spawn-at-startup "Telegram"
 
 // == ПРАВИЛА ОКОН (WINDOW RULES) ==
-// Важно: Проверь app-id через команду `niri msg windows`
-
 workspace "1-main" {
 }
 workspace "2-work" {
@@ -90,37 +87,30 @@ workspace "4-sys" {
 }
 
 window-rule {
-    // Браузеры
     match app-id=r"firefox|chromium|brave|google-chrome|steam"
     open-on-workspace "1-main"
 }
 
 window-rule {
-    match app-id=r"firefox|obsidian"
+    match app-id=r"firefox|obsidian|Alacritty"
     open-maximized true
 }
 
 window-rule {
-    // Терминалы и редакторы
-    // Alacritty часто имеет app-id "Alacritty" (с большой буквы), проверь!
     match app-id=r"Alacritty|obsidian"
     open-on-workspace "2-work"
 }
 
 window-rule {
-    // Мессенджеры
-    // Telegram обычно org.telegram.desktop
     match app-id=r"org.telegram.desktop|telegram|thunderbird|discord|vesktop"
     open-on-workspace "3-chat"
 }
 
 window-rule {
-    // Системные
     match app-id=r"org.pulseaudio.pavucontrol|com.github.wwmm.easyeffects|koala-clash|blueman-manager"
     open-on-workspace "4-sys"
 }
 
-// Скругления углов
 window-rule {
     geometry-corner-radius 8
     clip-to-geometry true
@@ -139,7 +129,7 @@ binds {
     Mod+Tab { spawn "~/.config/niri/scripts/window_picker.sh"; }
 
     Mod+F { maximize-column; }
-    
+
     Mod+Shift+F { fullscreen-window; }
 
     // Навигация
