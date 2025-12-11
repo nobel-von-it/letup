@@ -1,6 +1,7 @@
 [soe][BassEnhancer#0]
 amount=2.5
 blend=4
+floor=50
 floorActive=true
 harmonics=3
 scope=90
