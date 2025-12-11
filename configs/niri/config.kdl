@@ -15,8 +15,14 @@ input {
     }
 }
 
-output "eDP-1" {
+output "*" {
     scale 1.0
+}
+output "eDP-1" {
+    position x=0 y=1080
+}
+output "HDMI-A-1" {
+    position x=1280 y=0
 }
 
 layout {
@@ -87,17 +93,17 @@ workspace "4-sys" {
 }
 
 window-rule {
-    match app-id=r"firefox|chromium|brave|google-chrome|steam"
-    open-on-workspace "1-main"
-}
-
-window-rule {
-    match app-id=r"firefox|obsidian|Alacritty"
+    match app-id=r"firefox|obsidian|Alacritty|org.telegram.desktop|libreoffice-writer|libreoffice-calc|org.qbittorrent.qBittorrent"
     open-maximized true
 }
 
 window-rule {
-    match app-id=r"Alacritty|obsidian"
+    match app-id=r"firefox|chromium|brave|google-chrome|steam|PortProton"
+    open-on-workspace "1-main"
+}
+
+window-rule {
+    match app-id=r"Alacritty|obsidian|libreoffice-writer|libreoffice-calc"
     open-on-workspace "2-work"
 }
 
@@ -107,7 +113,7 @@ window-rule {
 }
 
 window-rule {
-    match app-id=r"org.pulseaudio.pavucontrol|com.github.wwmm.easyeffects|koala-clash|blueman-manager"
+    match app-id=r"org.pulseaudio.pavucontrol|com.github.wwmm.easyeffects|koala-clash|blueman-manager|org.qbittorrent.qBittorrent"
     open-on-workspace "4-sys"
 }
 
