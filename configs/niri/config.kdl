@@ -93,12 +93,12 @@ workspace "4-sys" {
 }
 
 window-rule {
-    match app-id=r"firefox|obsidian|Alacritty|org.telegram.desktop|libreoffice-writer|libreoffice-calc|org.qbittorrent.qBittorrent"
+    match app-id=r"firefox|obsidian|Alacritty|org.telegram.desktop|libreoffice-writer|libreoffice-calc|org.qbittorrent.qBittorrent|calibre-gui|gamescope"
     open-maximized true
 }
 
 window-rule {
-    match app-id=r"firefox|chromium|brave|google-chrome|steam|PortProton"
+    match app-id=r"firefox|chromium|brave|google-chrome|steam|PortProton|calibre-gui|gamescope"
     open-on-workspace "1-main"
 }
 
