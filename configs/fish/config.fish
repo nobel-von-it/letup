@@ -70,5 +70,8 @@ set -gx CASE_SENSITIVE false
 set -gx QT_QPA_PLATFORMTHEME qt5ct
 set -gx GTK_THEME Adwaita-dark
 
+set -gx PROJECTS "$HOME/Dev/projs/"
+set -gx TESTS "$HOME/Dev/tests/"
+
 # SYM Syncthing
 set -gx SYNCTHING_ADDR "127.0.0.1:8384"
