@@ -23,7 +23,6 @@ CONFIG_NAMES = [
     "tmux",
     "swaylock",
     "sway",
-    "easyeffects",
     "niri",
     "waybar",
     "fuzzel",
