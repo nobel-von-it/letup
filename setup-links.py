@@ -17,6 +17,7 @@ DEST_CONFIG_PATH = Path.home() / ".config"
 CONFIG_NAMES = [
     "yazi",
     "alacritty",
+    "clang",
     "minvim:nvim",
     "fish",
     "zed",
@@ -99,10 +100,16 @@ def tmux_config(src_path: Path, dest_path: Path) -> None:
             sys.exit(1)
 
 
+def clang_config(src_path: Path) -> None:
+    link_config(src_path, Path.home(), "clang/.clang-format:.clang-format")
+
+
 def setup_configs(src_path: Path, dest_path: Path, configs: list[str]) -> None:
     for config in configs:
         if config == "tmux":
             tmux_config(src_path, dest_path)
+        elif config == "clang":
+            clang_config(src_path)
         else:
             link_config(src_path, dest_path, config)
 

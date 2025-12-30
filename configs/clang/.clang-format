@@ -1,0 +1,42 @@
+---
+BasedOnStyle: llvm
+
+ColumnLimit: 100
+IndentWidth: 4
+IndentPPDirectives: AfterHash
+IndentCaseLabels: true
+
+SortIncludes: true
+
+BreakBeforeBraces: Custom
+BraceWrapping:
+  AfterFunction: true      # Только функции переносятся
+  AfterControlStatement: false  # if/for/while на той же строке
+  AfterClass: false
+  AfterEnum: false
+  AfterStruct: false
+  AfterUnion: false
+  AfterExternBlock: false
+  BeforeCatch: false
+  BeforeElse: false
+  BeforeLambdaBody: false
+  BeforeWhile: false
+  IndentBraces: false
+  SplitEmptyFunction: true
+  SplitEmptyRecord: false
+  SplitEmptyNamespace: false
+
+PointerAlignment: Right
+
+AllowShortIfStatementsOnASingleLine: true
+AllowShortLoopsOnASingleLine: true
+
+SeparateDefinitionBlocks: Always
+
+MaxEmptyLinesToKeep: 1
+KeepEmptyLinesAtTheStartOfBlocks: false
+
+SpacesBeforeTrailingComments: 2
+AlignTrailingComments: true
+
+
