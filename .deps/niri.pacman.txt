@@ -10,3 +10,15 @@ grim
 slurp
 libnotify
 polkit-gnome
+
+xwayland-satellite
+playerctl
+swaylock
+swayidle
+brightnessctl
+syncthing
+swww
+alacritty
+obsidian
+firefox
+telegram-desktop
