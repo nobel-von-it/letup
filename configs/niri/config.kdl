@@ -129,7 +129,8 @@ binds {
     Mod+C { close-window; }
     Mod+Shift+E { quit; }
 
-    Print { spawn "sh" "-c" "grim -g \"$(slurp)\" - | swappy -f -"; }
+    Print { spawn "sh" "-c" "grim -g \"$(slurp)\" - | wl-copy"; }
+    Shift+Print { spawn "~/.config/niri/scripts/ai-ocr.sh"; }
     Mod+N { spawn "networkmanager_dmenu"; }
     Mod+Tab { spawn "~/.config/niri/scripts/window_picker.sh"; }
 

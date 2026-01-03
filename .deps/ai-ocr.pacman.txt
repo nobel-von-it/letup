@@ -1,0 +1,6 @@
+python-pip
+python-virtualenv
+libnotify
+grim
+slurp
+wl-clipboard
