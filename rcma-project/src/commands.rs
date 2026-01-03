@@ -3,6 +3,8 @@ use std::{fs, io, path::Path, process};
 use anyhow::Result;
 use clap::{Parser, Subcommand, ValueEnum};
 
+use crate::inquirer;
+
 fn is_available_command(command: &str) -> bool {
     // if command -v "command" 1>/dev/null 2>&1; then return 0; fi
     process::Command::new(command).status().is_ok()
@@ -50,21 +52,14 @@ impl RcmaArgs {
         let path_to_save = self.path_to_save.clone();
         let path = Path::new(&path_to_save);
         if !path.exists() {
-            println!("Path does not exist, do you want to create it? (y/n)");
-            let mut ans = String::new();
-            io::stdin().read_line(&mut ans)?;
-
-            if ans.trim().to_lowercase() == "y" {
+            if inquirer::question_yes_no("Path does not exist, do you want to create it?")? {
                 fs::create_dir_all(&path_to_save)?;
             } else {
-                println!("Enter a valid path: ");
-                let mut new_path = String::new();
-                io::stdin().read_line(&mut new_path)?;
-                self.path_to_save = new_path.trim().to_string();
-
+                let new_path = inquirer::question_string("Enter a valid path: ")?;
                 if !Path::new(&new_path).exists() {
                     panic!("Path does not exist. Bruh");
                 }
+                self.path_to_save = new_path;
             }
         }
         Ok(())
