@@ -20,11 +20,12 @@ CONFIG_NAMES = [
     "clang",
     "minvim:nvim",
     "fish",
+    "zsh",
+    "ohmyzsh",
     "zed",
     "tmux",
     "swaylock",
     "sway",
-    "easyeffects",
     "niri",
     "waybar",
     "fuzzel",
@@ -104,12 +105,26 @@ def clang_config(src_path: Path) -> None:
     link_config(src_path, Path.home(), "clang/.clang-format:.clang-format")
 
 
+def zsh_config(src_path: Path) -> None:
+    link_config(src_path, Path.home(), "zsh/.zshrc:.zshrc")
+
+
+def ohmyzsh_config() -> None:
+    _ = os.system(
+        'sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"'
+    )
+
+
 def setup_configs(src_path: Path, dest_path: Path, configs: list[str]) -> None:
     for config in configs:
         if config == "tmux":
             tmux_config(src_path, dest_path)
         elif config == "clang":
             clang_config(src_path)
+        elif config == "zsh":
+            zsh_config(src_path)
+        elif config == "ohmyzsh":
+            ohmyzsh_config()
         else:
             link_config(src_path, dest_path, config)
 
