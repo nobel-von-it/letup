@@ -5,8 +5,7 @@ prefer-no-csd
 input {
     keyboard {
         xkb {
-            layout "us,ru"
-            options "grp:win_space_toggle"
+            layout "us"
         }
     }
     touchpad {
@@ -47,7 +46,6 @@ layout {
         active-color "#7a8ca3"
         inactive-color "#2c323c"
     }
-    
     shadow {
         on
         softness 30
@@ -61,6 +59,7 @@ spawn-at-startup "waybar"
 spawn-at-startup "mako"
 spawn-at-startup "swww-daemon"
 spawn-at-startup "xwayland-satellite"
+spawn-at-startup "fcitx5" "-d"
 
 spawn-at-startup "swayidle" "-w" \
     "timeout" "300" "sh -c 'playerctl pause; swaylock -f'" \
