@@ -60,6 +60,7 @@ spawn-at-startup "mako"
 spawn-at-startup "swww-daemon"
 spawn-at-startup "xwayland-satellite"
 spawn-at-startup "fcitx5" "-d"
+spawn-at-startup "blueman-applet"
 
 spawn-at-startup "swayidle" "-w" \
     "timeout" "300" "sh -c 'playerctl pause; swaylock -f'" \
