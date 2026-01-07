@@ -96,7 +96,7 @@ def tmux_config(src_path: Path, dest_path: Path) -> None:
     tpm_path = dest_path / "tmux/plugins/tpm"
     tpm_url = "https://github.com/tmux-plugins/tpm"
     if not tpm_path.exists():
-        if os.system(f"git clone {tpm_url} {tpm_path}") != 0:
+        if os.system(f"git clone --depth=1 {tpm_url} {tpm_path}") != 0:
             print("Aborted by git clone for tpm")
             sys.exit(1)
 
