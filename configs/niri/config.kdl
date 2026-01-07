@@ -135,6 +135,7 @@ binds {
     Mod+N { spawn "networkmanager_dmenu"; }
     Mod+Tab { spawn "~/.config/niri/scripts/window_picker.sh"; }
 
+    Mod+V { toggle-window-floating; }
     Mod+F { maximize-column; }
 
     Mod+Shift+F { fullscreen-window; }
