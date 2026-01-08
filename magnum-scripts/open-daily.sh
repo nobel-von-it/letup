@@ -1,7 +1,7 @@
 #!/bin/bash
 
 DEST_DIR="${MO_DAILY_PATH:-$MO_BASE_PATH/Areas/Daily}"
-TEMPLATE_PATH="$MO_BASE_PATH/Resources/Templates/Daily template.md"
+TEMPLATE_PATH="$MO_BASE_PATH/Resources/Templates/Daily Template.md"
 
 DATE=$(date +%Y-%m-%d)
 FILE_PATH="$DEST_DIR/$DATE.md"
