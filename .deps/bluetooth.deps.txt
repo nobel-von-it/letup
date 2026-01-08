@@ -1,0 +1,6 @@
+bluez
+bluez-utils
+blueman
+pipewire
+pipewire-pulse
+wireplumber
