@@ -79,5 +79,7 @@ set -gx XMODIFIERS @im=fcitx
 set -gx SDL_IM_MODULE fcitx
 set -gx GLFW_IM_MODULE ibus
 
+set -gx MO_BASE_PATH "$HOME/Documents/MagnumOpus"
+
 # SYM Syncthing
 set -gx SYNCTHING_ADDR "127.0.0.1:8384"
