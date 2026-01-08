@@ -90,7 +90,7 @@ def format_genres(genres_list: list[str]) -> str:
 
 
 def create_project_structure(game_name: str, genres: list[str]) -> tuple[Path, Path]:
-    folder_path = BASE_PATH / game_name
+    folder_path = BASE_PATH / ("Пройти " + game_name)
     basa_path = folder_path / "БАЗА.md"
     review_path = folder_path / "Ревью.md"
 
