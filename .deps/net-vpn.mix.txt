@@ -1,0 +1,9 @@
+networkmanager
+network-manager-applet
+iwd
+wireless_tools
+dnsmasq
+bridge-utils
+koala-clash-bin
+amneziavpn-bin
+syncthing

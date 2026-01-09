@@ -1,5 +1,0 @@
-easyeffects
-lsp-plugins
-pipewire
-pipewire-pulse
-calf

@@ -1,0 +1,8 @@
+docker
+docker-compose
+libvirt
+qemu-base
+virt-manager
+virt-viewer
+spice-vdagent
+edk2-ovmf

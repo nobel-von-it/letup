@@ -1,0 +1,16 @@
+niri
+fuzzel
+libnotify
+polkit-gnome
+brightnessctl
+playerctl
+mako
+waybar
+swww
+grim
+slurp
+swayidle
+swaylock-effects-git
+xwayland-satellite
+wl-clipboard
+alacritty-smooth-cursor-git

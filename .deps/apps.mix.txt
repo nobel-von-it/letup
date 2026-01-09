@@ -1,0 +1,16 @@
+firefox
+chromium
+epiphany
+telegram-desktop
+discord
+obsidian
+qbittorrent
+libreoffice-fresh
+ente-auth-bin
+appimagelauncher
+ollama-cuda
+wine
+wine-mono
+winetricks
+v4l2loopback-dkms
+7zip

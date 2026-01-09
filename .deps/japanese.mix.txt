@@ -1,0 +1,15 @@
+fcitx5
+fcitx5-configtool
+fcitx5-gtk
+fcitx5-mozc
+fcitx5-qt
+noto-fonts-cjk
+
+tesseract
+tesseract-data-deu
+tesseract-data-eng
+tesseract-data-jpn
+tesseract-data-jpn_vert
+tesseract-data-kor
+tesseract-data-rus
+anki-bin
