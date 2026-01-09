@@ -1,0 +1,49 @@
+# --- Шрифты ---
+font-family = "JetBrainsMono Nerd Font"
+font-size = 12
+
+# --- Окно и прозрачность ---
+background-opacity = 0.9
+background-blur = true
+window-padding-x = 10
+window-padding-y = 10
+window-decoration = true
+
+# --- Курсор ---
+cursor-style = block
+cursor-style-blink = true
+
+# --- Основные цвета ---
+background = #1a1c23
+foreground = #aab1be
+
+# --- Цветовая палитра (Normal) ---
+palette = 0=#2c323c
+palette = 1=#b07b7b
+palette = 2=#8da18d
+palette = 3=#bfb48f
+palette = 4=#7a8ca3
+palette = 5=#9e8ba3
+palette = 6=#889ca6
+palette = 7=#aab1be
+
+# --- Цветовая палитра (Bright) ---
+palette = 8=#4b5263
+palette = 9=#d48f8f
+palette = 10=#a3bea3
+palette = 11=#d6c694
+palette = 12=#8ca3bd
+palette = 13=#bda3b7
+palette = 14=#9cb0ba
+palette = 15=#d8dee9
+
+# --- Прокрутка ---
+scrollback-limit = 10000
+
+# --- Настройки окружения ---
+# Ghostty лучше работает со своим значением xterm-ghostty, 
+# но если нужно строго как в Alacritty:
+# term = xterm-256color
+
+# --- Мышь ---
+copy-on-select = true

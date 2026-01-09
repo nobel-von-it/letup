@@ -17,6 +17,8 @@ DEST_CONFIG_PATH = Path.home() / ".config"
 CONFIG_NAMES = [
     "yazi",
     "alacritty",
+    "ghostty",
+    "kitty",
     "clang",
     "minvim:nvim",
     "fish",
