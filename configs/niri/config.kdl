@@ -125,7 +125,8 @@ window-rule {
 // == БИНДЫ ==
 binds {
     Mod+Shift+Slash { show-hotkey-overlay; }
-    Mod+Return { spawn "alacritty" "-e" "sh" "-c" "tmux a || tmux"; }
+    // Mod+Return { spawn "alacritty" "-e" "sh" "-c" "tmux a || tmux"; }
+    Mod+Return { spawn "kitty"; }
     Mod+P { spawn "fuzzel"; }
     Mod+C { close-window; }
     Mod+Shift+E { quit; }
