@@ -76,7 +76,7 @@ spawn-at-startup "brightnessctl" "set" "30%"
 spawn-at-startup "syncthing" "--no-browser"
 spawn-at-startup "swww" "img" "~/Pictures/Wallpapers/wanderer-above-the-sea-of-fog-melancholy.png"
 
-spawn-at-startup "alacritty" "-e" "sh" "-c" "tmux a || tmux"
+spawn-at-startup "kitty"
 spawn-at-startup "obsidian"
 spawn-at-startup "firefox"
 spawn-at-startup "koala-clash"
@@ -93,7 +93,7 @@ workspace "4-sys" {
 }
 
 window-rule {
-    match app-id=r"firefox|obsidian|Alacritty|org.telegram.desktop|libreoffice-writer|libreoffice-calc|org.qbittorrent.qBittorrent|calibre-gui|gamescope"
+    match app-id=r"firefox|obsidian|Alacritty|org.telegram.desktop|libreoffice-writer|libreoffice-calc|org.qbittorrent.qBittorrent|calibre-gui|gamescope|kitty"
     open-maximized true
 }
 
@@ -103,7 +103,7 @@ window-rule {
 }
 
 window-rule {
-    match app-id=r"Alacritty|obsidian|libreoffice-writer|libreoffice-calc"
+    match app-id=r"Alacritty|obsidian|libreoffice-writer|libreoffice-calc|kitty"
     open-on-workspace "2-work"
 }
 
