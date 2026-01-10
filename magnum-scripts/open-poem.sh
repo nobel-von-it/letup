@@ -7,4 +7,4 @@ mkdir -p "$TARGET_DIR"
 FILE_NAME="Стих $(date +%Y-%m-%d).md"
 FULL_PATH="$TARGET_DIR/$FILE_NAME"
 
-NVIM_APPNAME=litex nvim "$FULL_PATH"
+$MO_EDITOR "$FULL_PATH"

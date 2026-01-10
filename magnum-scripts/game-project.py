@@ -168,7 +168,8 @@ def main():
 
     if open_nvim:
         print("Запуск Neovim...")
-        _ = subprocess.run(["NVIM_APPNAME=litex", "nvim", str(basa_file)])
+        editor = os.getenv("MO_EDITOR", "nvim")
+        _ = subprocess.run([editor, str(basa_file)])
 
 
 if __name__ == "__main__":

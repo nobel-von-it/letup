@@ -20,4 +20,4 @@ else
     echo "Заметка на сегодня уже существует, открываю..."
 fi
 
-NVIM_APPNAME=litex nvim "$FILE_PATH"
+$MO_EDITOR "$FILE_PATH"
