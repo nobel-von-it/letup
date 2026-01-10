@@ -16,9 +16,9 @@ function mo
     set -l file_name (basename "$selected_file")
 
     set -l old_pwd (pwd)
-    
+
     cd "$target_dir"
-    env NVIM_APPNAME=litex nvim "$file_name"
-    
+    $MO_EDITOR "$file_name"
+
     cd "$old_pwd"
 end

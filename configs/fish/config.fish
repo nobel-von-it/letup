@@ -45,6 +45,9 @@ set -gx SDL_IM_MODULE fcitx
 set -gx GLFW_IM_MODULE ibus
 
 set -gx MO_BASE_PATH "$HOME/Documents/MagnumOpus"
+# set -gx MO_EDITOR lim 
+set -gx MO_EDITOR nvim
+
 set -gx LETUP "$HOME/Downloads/Git/letup"
 
 # SYM Syncthing
