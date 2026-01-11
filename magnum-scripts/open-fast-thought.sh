@@ -1,0 +1,14 @@
+#!/usr/bin/bash
+
+TARGET_DIR="${MO_THOUGHT:-$MO_BASE_PATH/FastThoughts}"
+
+mkdir -p "$TARGET_DIR"
+
+PREFIX_NAME="$(date +%Y-%m-%d)"
+REAL_NAME="$1"
+
+FILE_NAME="$PREFIX_NAME $REAL_NAME.md"
+FULL_PATH="$TARGET_DIR/$FILE_NAME"
+
+$MO_EDITOR "$FULL_PATH"
+
