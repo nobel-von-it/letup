@@ -7,5 +7,5 @@ desc = "Compress to ZIP"
 
 [[mgr.prepend_keymap]]
 on = ["c", "a"]
-run = 'shell "ouch compress %s %h.tar.gz" --block --confirm'
+run = 'shell "ouch compress --quiet %s %h.tar.gz" --block --confirm'
 desc = "Compress with ouch (tar.gz)"
