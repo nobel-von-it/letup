@@ -50,5 +50,7 @@ set -gx MO_EDITOR nvim
 
 set -gx LETUP "$HOME/Downloads/Git/letup"
 
+set -gx STEAM_GAMES "$HOME/.local/share/Steam/steamapps/compatdata"
+
 # SYM Syncthing
 set -gx SYNCTHING_ADDR "127.0.0.1:8384"
