@@ -4,6 +4,6 @@
 [submodule ".wrappers/rcma"]
 	path = .wrappers/rcma
 	url = git@github.com:nobel-von-it/rcma.git
-[submodule "parp"]
-	path = parp
+[submodule ".wrappers/parp"]
+	path = .wrappers/parp
 	url = ssh://git@codeberg.org/nobel-von-it/parp.git
