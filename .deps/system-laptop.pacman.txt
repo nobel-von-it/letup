@@ -1,0 +1,14 @@
+intel-media-driver
+libva-intel-driver
+vulkan-intel
+intel-gpu-tools
+thermald
+tlp
+tlp-rdw
+powertop
+brightnessctl
+acpid
+libinput
+xf86-input-libinput
+ly
+ttf-jetbrains-mono-nerd

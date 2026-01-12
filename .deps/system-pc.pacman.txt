@@ -19,3 +19,4 @@ bluez
 bluez-utils
 cups
 hplip
+ttf-jetbrains-mono-nerd
