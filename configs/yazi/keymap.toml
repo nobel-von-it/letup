@@ -1,0 +1,11 @@
+[[mgr.prepend_keymap]]
+on = ["c", "z"]
+run = '''
+    shell 'read -p "Enter archive name: " name; zip -r "$name.zip" %s' --block --confirm
+'''
+desc = "Compress to ZIP"
+
+[[mgr.prepend_keymap]]
+on = ["c", "a"]
+run = 'shell "ouch compress %s %h.tar.gz" --block --confirm'
+desc = "Compress with ouch (tar.gz)"

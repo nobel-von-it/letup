@@ -8,8 +8,6 @@ show_symlink = true
 wrap = "yes"
 
 [opener]
-play = [
-  { run = 'mpv "$@"', orphan = true, for = "unix" },
-]
+play = [{ run = 'mpv "$@"', orphan = true, for = "unix" }]
 edit = [{ run = '$EDITOR "$@"', block = true, for = "unix" }]
 open = [{ run = 'xdg-open "$@"', desc = "Open" }]
