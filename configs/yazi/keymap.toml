@@ -9,3 +9,8 @@ desc = "Compress to ZIP"
 on = ["c", "a"]
 run = 'shell "ouch compress --quiet %s %h.tar.gz" --block --confirm'
 desc = "Compress with ouch (tar.gz)"
+
+[[mgr.prepend_keymap]]
+on = ["c", "y"]
+run = 'shell "cat %s | wl-copy" --confirm'
+desc = "Copy file content to clipboard"
