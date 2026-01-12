@@ -3,6 +3,7 @@ fuzzel
 libnotify
 polkit-gnome
 brightnessctl
+fish
 playerctl
 mako
 waybar
@@ -11,6 +12,7 @@ grim
 slurp
 swayidle
 swaylock-effects-git
+xdg-desktop-portal-gnome
 xwayland-satellite
 wl-clipboard
-alacritty-smooth-cursor-git
+kitty
