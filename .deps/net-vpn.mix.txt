@@ -4,6 +4,9 @@ iwd
 wireless_tools
 dnsmasq
 bridge-utils
+
 koala-clash-bin
+webkit2gtk-4.1
+
 amneziavpn-bin
 syncthing
