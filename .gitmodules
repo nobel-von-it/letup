@@ -1,6 +1,9 @@
 [submodule "configs/minvim"]
 	path = configs/minvim
 	url = git@github.com:nobel-von-it/minvim.git
-[submodule "rcma"]
-	path = rcma
+[submodule ".wrappers/rcma"]
+	path = .wrappers/rcma
 	url = git@github.com:nobel-von-it/rcma.git
+[submodule "parp"]
+	path = parp
+	url = ssh://git@codeberg.org/nobel-von-it/parp.git
