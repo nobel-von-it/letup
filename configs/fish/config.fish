@@ -25,7 +25,7 @@ fish_vi_key_bindings
 set -U fish_greeting ""
 
 # Path setup
-set -gx PATH /opt/cuda/bin "$HOME/.local/bin" "$HOME/.ghcup/bin" "$HOME/.cargo/bin" "$HOME/.local/share/bob/nvim-bin" "$HOME/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/" $PATH
+set -gx PATH /usr/lib/emscripten /opt/cuda/bin "$HOME/.local/bin" "$HOME/.ghcup/bin" "$HOME/.cargo/bin" "$HOME/.local/share/bob/nvim-bin" "$HOME/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/" $PATH
 set -gx LD_LIBRARY_PATH /opt/cuda/lib64 $LD_LIBRARY_PATH
 set -gx EDITOR nvim
 set -gx LOCAL_HOST "127.0.0.1:3000"
