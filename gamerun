@@ -1,0 +1,4 @@
+#!/usr/bin/bash
+
+GAMESCOPE_ARGS="-W 2560 -H 1440 -r 100 -f --force-grab-cursor"
+gamescope $GAMESCOPE_ARGS -- bash -c "$*; wineserver -k"
