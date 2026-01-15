@@ -13,6 +13,23 @@ fi
 
 if [ ! -f "$VENV_PATH" ]; then
     echo "Ошибка: Виртуальное окружение не найдено по пути $VENV_PATH"
+    echo "Создание виртуального окружения..."
+    python3 -m venv "$PWD/.venv"
+
+    if [ $? -eq 0 ]; then
+        echo "Виртуальное окружение успешно создано."
+    fi
+
+    source "$VENV_PATH"
+    echo "Установка зависимостей..."
+    pip3 install -r "$PWD/requirements.txt"
+
+    if [ $? -eq 0 ]; then
+        echo "Зависимости успешно установлены."
+    fi
+
+    deactivate
+
     exit 1
 fi
 
