@@ -3,8 +3,8 @@ font-family = "JetBrainsMono Nerd Font"
 font-size = 12
 
 # --- Окно и прозрачность ---
-background-opacity = 0.9
-background-blur = true
+background-opacity = 0.8
+background-blur = false
 window-padding-x = 10
 window-padding-y = 10
 window-decoration = true
@@ -40,10 +40,4 @@ palette = 15=#d8dee9
 # --- Прокрутка ---
 scrollback-limit = 10000
 
-# --- Настройки окружения ---
-# Ghostty лучше работает со своим значением xterm-ghostty, 
-# но если нужно строго как в Alacritty:
-# term = xterm-256color
-
-# --- Мышь ---
-copy-on-select = true
+command = tmux a || tmux
