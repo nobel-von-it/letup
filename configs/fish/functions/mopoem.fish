@@ -1,3 +1,3 @@
 function mopoem
-    $LETUP/magnum-scripts/open-poem.sh
+    $MO_SCRIPTS/open-poem.sh
 end

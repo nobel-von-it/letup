@@ -1,3 +1,3 @@
 function modaily
-    $LETUP/magnum-scripts/open-daily.sh
+    $MO_SCRIPTS/open-daily.sh
 end

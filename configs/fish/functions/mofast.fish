@@ -1,3 +1,3 @@
 function mofast
-    $LETUP/magnum-scripts/open-fast-thought.sh $argv
+    $MO_SCRIPTS/open-fast-thought.sh $argv
 end

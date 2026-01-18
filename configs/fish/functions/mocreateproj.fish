@@ -1,3 +1,3 @@
 function mocreateproj
-    $LETUP/magnum-scripts/project.py
+    $MO_SCRIPTS/project.py
 end

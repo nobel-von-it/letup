@@ -1,3 +1,3 @@
 function mogameproject
-    $LETUP/magnum-scripts/game-project.py
+    $MO_SCRIPTS/game-project.py
 end
