@@ -10,3 +10,6 @@
 [submodule "mo-scripts"]
 	path = mo-scripts
 	url = ssh://git@codeberg.org/nobel-von-it/mo-scripts.git
+[submodule "manga-ai-ocr"]
+	path = manga-ai-ocr
+	url = ssh://git@codeberg.org/nobel-von-it/manga-ai-ocr
