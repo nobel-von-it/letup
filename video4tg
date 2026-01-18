@@ -4,11 +4,15 @@ import json
 import logging
 import math
 import os
+import shutil
 import subprocess
 
-MAX_SIZE_MB = 1950
-LOG_FILE = "video_nvenc_processor.log"
-VIDEO_CODEC = "h264_nvenc"
+# --- НАСТРОЙКИ ---
+HARD_LIMIT_MB = 1950  # Лимит Телеграма
+CALC_TARGET_MB = 1400  # Целевой размер куска (с запасом)
+BATCH_SIZE = 10  # Количество видео в одном посте (группе)
+
+LOG_FILE = "batch_grouper.log"
 
 logging.basicConfig(
     level=logging.INFO,
@@ -18,7 +22,6 @@ logging.basicConfig(
 
 
 def get_video_info(file_path):
-    """Используем JSON формат для надежного получения данных"""
     cmd = [
         "ffprobe",
         "-v",
@@ -34,87 +37,60 @@ def get_video_info(file_path):
     )
 
     if result.returncode != 0:
-        logging.error(f"Ошибка ffprobe для {file_path}: {result.stderr}")
         return None
-
     try:
         data = json.loads(result.stdout)
         return {
             "duration": float(data["format"]["duration"]),
             "size": int(data["format"]["size"]),
         }
-    except (KeyError, ValueError, json.JSONDecodeError) as e:
-        logging.error(f"Не удалось обработать метаданные {file_path}: {e}")
+    except:
         return None
 
 
-def process_videos():
+def main():
     current_dir = os.getcwd()
-    video_extensions = (".mp4", ".mkv", ".avi", ".mov", ".flv", ".wmv", ".webm", ".ts")
 
-    files = [f for f in os.listdir(current_dir) if f.lower().endswith(video_extensions)]
+    # Папка для бекапа оригиналов (тех, что мы порезали)
+    backup_dir = os.path.join(current_dir, "_ORIGINALS_BACKUP")
+    os.makedirs(backup_dir, exist_ok=True)
 
-    if not files:
-        logging.info("Видеофайлы не найдены.")
-        return
+    logging.info("=== ЭТАП 1: Проверка и нарезка ===")
+
+    # 1. Сначала обрабатываем все файлы
+    # Берем только файлы в текущей папке (не лезем в подпапки)
+    files = sorted(
+        [
+            f
+            for f in os.listdir(current_dir)
+            if f.lower().endswith(".mp4")
+            and os.path.isfile(os.path.join(current_dir, f))
+        ]
+    )
 
     for file in files:
         file_path = os.path.join(current_dir, file)
-        base_name = os.path.splitext(file)[0]
-        logging.info(f"Анализ: {file}")
-
         info = get_video_info(file_path)
+
         if not info:
+            logging.warning(f"Не удалось прочитать: {file}")
             continue
 
         size_mb = info["size"] / (1024 * 1024)
-        is_mp4 = file.lower().endswith(".mp4")
 
-        work_file = file_path
+        if size_mb > HARD_LIMIT_MB:
+            logging.info(f"[РЕЖЕМ] {file} ({size_mb:.2f} MB)")
 
-        if not is_mp4:
-            output_mp4 = f"{base_name}_converted.mp4"
-            logging.info(f"Запуск NVENC для конвертации {file} в MP4...")
-            conv_cmd = [
-                "ffmpeg",
-                "-hwaccel",
-                "cuda",
-                "-i",
-                file_path,
-                "-c:v",
-                VIDEO_CODEC,
-                "-preset",
-                "p4",
-                "-tune",
-                "hq",
-                "-c:a",
-                "aac",
-                "-b:a",
-                "128k",
-                output_mp4,
-                "-y",
-            ]
-            try:
-                subprocess.run(conv_cmd, check=True)
-                work_file = output_mp4
-                # Обновляем инфо после конвертации
-                info = get_video_info(work_file)
-                size_mb = info["size"] / (1024 * 1024)
-            except subprocess.CalledProcessError as e:
-                logging.error(f"Ошибка при конвертации {file}: {e}")
-                continue
-
-        # 2. Дробление (если файл > лимита)
-        if size_mb > MAX_SIZE_MB:
-            logging.info(f"Файл слишком большой ({size_mb:.2f} MB). Режем на части...")
-            num_parts = math.ceil(size_mb / MAX_SIZE_MB)
+            num_parts = math.ceil(size_mb / CALC_TARGET_MB)
             part_duration = info["duration"] / num_parts
 
+            base_name = os.path.splitext(file)[0]
             output_pattern = f"{base_name} - part %03d.mp4"
+
             split_cmd = [
                 "ffmpeg",
                 "-i",
-                work_file,
+                file_path,
                 "-f",
                 "segment",
                 "-segment_time",
@@ -126,25 +102,68 @@ def process_videos():
                 output_pattern,
                 "-y",
             ]
+
             try:
                 subprocess.run(split_cmd, check=True)
-                logging.info(f"Готово: {file} разделен на {num_parts} частей.")
+                logging.info(" -> Успешно нарезан.")
 
-                # Если мы создавали временный сконвертированный файл, удаляем его после резки
-                if not is_mp4 and os.path.exists(work_file):
-                    os.remove(work_file)
+                # Перемещаем огромный оригинал в бекап, чтобы он не попал в отправку
+                shutil.move(file_path, os.path.join(backup_dir, file))
+                logging.info(f" -> Оригинал перемещен в {backup_dir}")
+
             except subprocess.CalledProcessError as e:
                 logging.error(f"Ошибка при резке {file}: {e}")
         else:
-            logging.info(f"Файл {file} в норме ({size_mb:.2f} MB).")
-            # Если конвертировали, но резать не пришлось — оставляем финальный mp4
-            if not is_mp4 and work_file != file_path:
-                os.rename(work_file, f"{base_name}.mp4")
+            logging.info(f"[OK] {file} ({size_mb:.2f} MB) - не требует резки.")
+
+    logging.info("=== ЭТАП 2: Группировка по папкам ===")
+
+    # Сканируем папку заново, чтобы увидеть новые части
+    # Исключаем сам скрипт и папки
+    final_files = sorted(
+        [
+            f
+            for f in os.listdir(current_dir)
+            if f.lower().endswith(".mp4")
+            and os.path.isfile(os.path.join(current_dir, f))
+        ]
+    )
+
+    if not final_files:
+        logging.info("Нет файлов для группировки.")
+        return
+
+    # Разбиваем список на куски по 10
+    total_batches = math.ceil(len(final_files) / BATCH_SIZE)
+
+    for i in range(total_batches):
+        batch_num = i + 1
+        batch_folder_name = f"Upload_Batch_{batch_num:02d}"
+        batch_folder_path = os.path.join(current_dir, batch_folder_name)
+
+        os.makedirs(batch_folder_path, exist_ok=True)
+
+        # Получаем срез файлов для текущей группы
+        start_index = i * BATCH_SIZE
+        end_index = start_index + BATCH_SIZE
+        batch_files = final_files[start_index:end_index]
+
+        logging.info(
+            f"Создание группы {batch_folder_name} ({len(batch_files)} файлов)..."
+        )
+
+        for filename in batch_files:
+            src = os.path.join(current_dir, filename)
+            dst = os.path.join(batch_folder_path, filename)
+            shutil.move(src, dst)
+
+    logging.info("=== Готово! ===")
+    logging.info("Файлы разложены по папкам 'Upload_Batch_XX'.")
+    logging.info("Большие оригиналы сохранены в '_ORIGINALS_BACKUP'.")
 
 
 if __name__ == "__main__":
-    logging.info("=== Запуск скрипта ===")
     try:
-        process_videos()
+        main()
     except Exception as e:
         logging.error(f"Критическая ошибка: {e}")
