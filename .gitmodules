@@ -7,3 +7,6 @@
 [submodule ".wrappers/rcma"]
 	path = .wrappers/rcma
 	url = git@github.com:nobel-von-it/rcma.git
+[submodule "mo-scripts"]
+	path = mo-scripts
+	url = ssh://git@codeberg.org/nobel-von-it/mo-scripts.git
