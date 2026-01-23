@@ -51,6 +51,8 @@ set -gx MO_SCRIPTS "$LETUP/mo-scripts"
 # set -gx MO_EDITOR lim 
 set -gx MO_EDITOR nvim
 
+set -gx VID "$HOME/Videos/OBS/"
+
 
 set -gx STEAM_GAMES "$HOME/.local/share/Steam/steamapps/compatdata"
 
