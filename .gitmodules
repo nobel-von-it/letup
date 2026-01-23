@@ -3,13 +3,13 @@
 	url = git@github.com:nobel-von-it/minvim.git
 [submodule ".wrappers/parp"]
 	path = .wrappers/parp
-	url = ssh://git@codeberg.org/nobel-von-it/parp.git
+	url = ssh://git@codeberg.org/nimirus/parp.git
 [submodule ".wrappers/rcma"]
 	path = .wrappers/rcma
 	url = git@github.com:nobel-von-it/rcma.git
 [submodule "mo-scripts"]
 	path = mo-scripts
-	url = ssh://git@codeberg.org/nobel-von-it/mo-scripts.git
+	url = ssh://git@codeberg.org/nimirus/mo-scripts.git
 [submodule "manga-ai-ocr"]
 	path = manga-ai-ocr
-	url = ssh://git@codeberg.org/nobel-von-it/manga-ai-ocr
+	url = ssh://git@codeberg.org/nimirus/manga-ai-ocr.git
