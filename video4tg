@@ -4,13 +4,14 @@ import json
 import logging
 import math
 import os
+import re
 import shutil
 import subprocess
 
 # --- НАСТРОЙКИ ---
-HARD_LIMIT_MB = 1950  # Лимит Телеграма
-CALC_TARGET_MB = 1400  # Целевой размер куска (с запасом)
-BATCH_SIZE = 10  # Количество видео в одном посте (группе)
+TARGET_SIZE_BYTES = 1920 * 1024 * 1024
+OFFSET_SIZE_BYTES = 50 * 1024 * 1024
+BATCH_SIZE = 10
 
 LOG_FILE = "batch_grouper.log"
 
@@ -21,7 +22,13 @@ logging.basicConfig(
 )
 
 
-def get_video_info(file_path):
+def natural_sort_key(s: str):
+    return [
+        int(text) if text.isdigit() else text.lower() for text in re.split(r"(\d+)", s)
+    ]
+
+
+def get_video_info(file_path: str):
     cmd = [
         "ffprobe",
         "-v",
@@ -35,7 +42,6 @@ def get_video_info(file_path):
     result = subprocess.run(
         cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True
     )
-
     if result.returncode != 0:
         return None
     try:
@@ -48,118 +54,136 @@ def get_video_info(file_path):
         return None
 
 
+def split_by_size_sequential(file_path: str, backup_dir: str) -> bool:
+    info = get_video_info(file_path)
+    if not info:
+        logging.error(f"Не удалось прочитать {file_path}")
+        return False
+
+    total_duration = info["duration"]
+    file_size = info["size"]
+
+    if file_size < (TARGET_SIZE_BYTES + OFFSET_SIZE_BYTES):
+        logging.info(f"[ОК] {file_path} (Total: {file_size / 1024 / 1024:.2f} MB)")
+        return False
+
+    base_name = os.path.splitext(os.path.basename(file_path))[0]
+    directory = os.path.dirname(file_path)
+
+    current_start_time = 0.0
+    part_num = 0
+
+    logging.info(f"[РЕЖЕМ] {base_name} (Total: {file_size / 1024 / 1024:.2f} MB)")
+
+    while current_start_time < (total_duration - 1):
+        output_filename = f"{base_name} - part {part_num:03d}.mp4"
+        output_path = os.path.join(directory, output_filename)
+
+        cmd = [
+            "ffmpeg",
+            "-ss",
+            str(current_start_time),
+            "-i",
+            file_path,
+            "-c",
+            "copy",
+            "-fs",
+            str(TARGET_SIZE_BYTES),
+            "-y",
+            output_path,
+        ]
+
+        _ = subprocess.run(
+            cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True
+        )
+
+        part_info = get_video_info(output_path)
+        if not part_info:
+            logging.error(f"Ошибка создания части {output_path}")
+            break
+
+        chunk_duration = part_info["duration"]
+        chunk_size_mb = part_info["size"] / (1024 * 1024)
+
+        logging.info(
+            f" -> Part {part_num}: {chunk_size_mb:.2f} MB, длительность: {chunk_duration:.2f} сек."
+        )
+
+        if chunk_duration < 1.0:
+            if os.path.exists(output_path):
+                os.remove(output_path)
+            break
+
+        current_start_time += chunk_duration
+        part_num += 1
+
+        if chunk_duration < 10 and part_info["size"] > TARGET_SIZE_BYTES * 0.9:
+            logging.warning(
+                "Странное поведение: кусок короткий, но полный. Возможно ошибка seek."
+            )
+
+    _ = shutil.move(file_path, os.path.join(backup_dir, os.path.basename(file_path)))
+    return True
+
+
 def main():
     current_dir = os.getcwd()
-
-    # Папка для бекапа оригиналов (тех, что мы порезали)
     backup_dir = os.path.join(current_dir, "_ORIGINALS_BACKUP")
     os.makedirs(backup_dir, exist_ok=True)
 
-    logging.info("=== ЭТАП 1: Проверка и нарезка ===")
+    logging.info("=== ЭТАП 1: Умная нарезка по размеру (-fs) ===")
 
-    # 1. Сначала обрабатываем все файлы
-    # Берем только файлы в текущей папке (не лезем в подпапки)
     files = sorted(
         [
             f
             for f in os.listdir(current_dir)
             if f.lower().endswith(".mp4")
+            and " - part " not in f
             and os.path.isfile(os.path.join(current_dir, f))
-        ]
+        ],
+        key=natural_sort_key,
     )
 
     for file in files:
         file_path = os.path.join(current_dir, file)
-        info = get_video_info(file_path)
-
-        if not info:
-            logging.warning(f"Не удалось прочитать: {file}")
-            continue
-
-        size_mb = info["size"] / (1024 * 1024)
-
-        if size_mb > HARD_LIMIT_MB:
-            logging.info(f"[РЕЖЕМ] {file} ({size_mb:.2f} MB)")
-
-            num_parts = math.ceil(size_mb / CALC_TARGET_MB)
-            part_duration = info["duration"] / num_parts
-
-            base_name = os.path.splitext(file)[0]
-            output_pattern = f"{base_name} - part %03d.mp4"
-
-            split_cmd = [
-                "ffmpeg",
-                "-i",
-                file_path,
-                "-f",
-                "segment",
-                "-segment_time",
-                str(part_duration),
-                "-reset_timestamps",
-                "1",
-                "-c",
-                "copy",
-                output_pattern,
-                "-y",
-            ]
-
-            try:
-                subprocess.run(split_cmd, check=True)
-                logging.info(" -> Успешно нарезан.")
-
-                # Перемещаем огромный оригинал в бекап, чтобы он не попал в отправку
-                shutil.move(file_path, os.path.join(backup_dir, file))
-                logging.info(f" -> Оригинал перемещен в {backup_dir}")
-
-            except subprocess.CalledProcessError as e:
-                logging.error(f"Ошибка при резке {file}: {e}")
-        else:
-            logging.info(f"[OK] {file} ({size_mb:.2f} MB) - не требует резки.")
+        _ = split_by_size_sequential(file_path, backup_dir)
 
     logging.info("=== ЭТАП 2: Группировка по папкам ===")
 
-    # Сканируем папку заново, чтобы увидеть новые части
-    # Исключаем сам скрипт и папки
     final_files = sorted(
         [
             f
             for f in os.listdir(current_dir)
             if f.lower().endswith(".mp4")
             and os.path.isfile(os.path.join(current_dir, f))
-        ]
+        ],
+        key=natural_sort_key,
     )
 
     if not final_files:
         logging.info("Нет файлов для группировки.")
         return
 
-    # Разбиваем список на куски по 10
     total_batches = math.ceil(len(final_files) / BATCH_SIZE)
 
     for i in range(total_batches):
         batch_num = i + 1
         batch_folder_name = f"Upload_Batch_{batch_num:02d}"
         batch_folder_path = os.path.join(current_dir, batch_folder_name)
-
         os.makedirs(batch_folder_path, exist_ok=True)
 
-        # Получаем срез файлов для текущей группы
-        start_index = i * BATCH_SIZE
-        end_index = start_index + BATCH_SIZE
-        batch_files = final_files[start_index:end_index]
+        batch_files = final_files[i * BATCH_SIZE : (i + 1) * BATCH_SIZE]
 
-        logging.info(
-            f"Создание группы {batch_folder_name} ({len(batch_files)} файлов)..."
-        )
+        logging.info(f"Группа {batch_folder_name}:")
+        if batch_files:
+            logging.info(f" -> {batch_files[0]} ... {batch_files[-1]}")
 
         for filename in batch_files:
             src = os.path.join(current_dir, filename)
             dst = os.path.join(batch_folder_path, filename)
-            shutil.move(src, dst)
+            _ = shutil.move(src, dst)
 
     logging.info("=== Готово! ===")
-    logging.info("Файлы разложены по папкам 'Upload_Batch_XX'.")
-    logging.info("Большие оригиналы сохранены в '_ORIGINALS_BACKUP'.")
 
 
 if __name__ == "__main__":
