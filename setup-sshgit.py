@@ -72,6 +72,12 @@ def main() -> None:
     pub_key = KEY_PATH.with_suffix(".pub").read_text()
     if shutil.which("wl-copy") is not None:
         _ = subprocess.run(["wl-copy"], input=pub_key, text=True, check=True)
+    elif shutil.which("xclip") is not None:
+        _ = subprocess.run(
+            ["xclip", "-selection", "clipboard"], input=pub_key, check=True
+        )
+    else:
+        print("Cannot copy public key. Please copy manually:" + pub_key)
 
     print(f"Add this key to GitHub: {GITHUB_SSH_URL}")
     print(f"Add this key to Codeberg: {CODEBERG_SSH_URL}")
