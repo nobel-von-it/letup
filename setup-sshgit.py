@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import importlib
 import os
 import re
 import shutil
@@ -11,10 +12,18 @@ INQUIRER_SCRIPT_PATH = Path(__file__).parent / "setup-inquirer.py"
 
 try:
     import inquirer
-except ImportError:
+except (ImportError, ModuleNotFoundError):
     _ = subprocess.run([sys.executable, str(INQUIRER_SCRIPT_PATH)], check=True)
-    import inquirer
+    importlib.invalidate_caches()
 
+    try:
+        import setuptools._distutils as distutils
+
+        sys.modules["distutils"] = distutils
+    except ImportError:
+        pass
+
+    import inquirer
 
 DEPS = ["openssh"]
 
