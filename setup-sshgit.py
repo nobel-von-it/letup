@@ -8,17 +8,6 @@ import subprocess
 import sys
 from pathlib import Path
 
-try:
-    import distutils
-except ImportError:
-    try:
-        # Пытаемся взять distutils, который спрятан внутри setuptools
-        import setuptools._distutils as distutils
-
-        sys.modules["distutils"] = distutils
-    except ImportError:
-        pass
-
 INQUIRER_SCRIPT_PATH = Path(__file__).parent / "setup-inquirer.py"
 
 try:
