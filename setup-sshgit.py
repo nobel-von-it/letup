@@ -20,7 +20,7 @@ DEPS = ["openssh"]
 
 DEFAULT_EMAIL = "maksimdavydenko12@gmail.com"
 DEFAULT_NAME = "nobel-von-it"
-KEY_PATH = Path.home() / ".ssh/id_ed25519.pub"
+KEY_PATH = Path.home() / ".ssh/id_ed25519"
 
 GITHUB_SSH_URL = "https://github.com/settings/ssh/new"
 CODEBERG_SSH_URL = "https://codeberg.org/user/settings/keys"
