@@ -57,7 +57,7 @@ def main() -> None:
     if not KEY_PATH.exists():
         KEY_PATH.parent.mkdir(parents=True, exist_ok=True)
         _ = subprocess.run(
-            f"ssh-keygen -t ed25519 -f '{KEY_PATH}' -C '{email}'", check=True
+            f'ssh-keygen -t ed25519 -f {KEY_PATH} -C {email} -N ""', check=True
         )
 
     res = subprocess.run(["ssh-agent", "-s"], capture_output=True, text=True)
