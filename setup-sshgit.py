@@ -16,12 +16,16 @@ except ImportError:
     import inquirer
 
 
+DEPS = ["openssh"]
+
 DEFAULT_EMAIL = "maksimdavydenko12@gmail.com"
 DEFAULT_NAME = "nobel-von-it"
 KEY_PATH = Path.home() / ".ssh/id_ed25519.pub"
 
 GITHUB_SSH_URL = "https://github.com/settings/ssh/new"
 CODEBERG_SSH_URL = "https://codeberg.org/user/settings/keys"
+
+_ = subprocess.run(["sudo", "pacman", "-S", "--needed", *DEPS], check=True)
 
 
 def inquirer_questions() -> tuple[str, str]:
@@ -51,6 +55,7 @@ def main() -> None:
     _ = subprocess.run(f"git config --global user.name {name}".split(" "), check=True)
 
     if not KEY_PATH.exists():
+        KEY_PATH.parent.mkdir(parents=True, exist_ok=True)
         _ = subprocess.run(
             f"ssh-keygen -t ed25519 -f '{KEY_PATH}' -C '{email}'", check=True
         )
