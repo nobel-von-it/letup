@@ -66,7 +66,7 @@ def main() -> None:
         if match:
             os.environ[match.group(1)] = match.group(2)
 
-    _ = subprocess.run(["ssh-add", "-l"], check=True)
+    _ = subprocess.run(["ssh-add", KEY_PATH], check=True)
 
     pub_key = KEY_PATH.read_text()
     if shutil.which("wl-copy") is not None:
