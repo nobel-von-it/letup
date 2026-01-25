@@ -22,6 +22,12 @@ DEFAULT_EMAIL = "maksimdavydenko12@gmail.com"
 DEFAULT_NAME = "nobel-von-it"
 KEY_PATH = Path.home() / ".ssh/id_ed25519"
 
+KNOWN_HOSTS = [
+    "github.com",
+    "codeberg.org",
+]
+KNOWN_HOSTS_PATH = KEY_PATH.parent / "known_hosts"
+
 GITHUB_SSH_URL = "https://github.com/settings/ssh/new"
 CODEBERG_SSH_URL = "https://codeberg.org/user/settings/keys"
 
@@ -60,6 +66,18 @@ def main() -> None:
             ["ssh-keygen", "-t", "ed25519", "-f", str(KEY_PATH), "-C", email, "-N", ""],
             check=True,
         )
+
+    res = subprocess.run(
+        [
+            "ssh-keyscan",
+            *KNOWN_HOSTS,
+        ],
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    with open(KNOWN_HOSTS_PATH, "a") as f:
+        _ = f.write(res.stdout)
 
     res = subprocess.run(["ssh-agent", "-s"], capture_output=True, text=True)
     for line in res.stdout.splitlines():
