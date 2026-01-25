@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-TARGET_DIR="$(dirname "$(realpath "$0")")/../yay"
+TARGET_DIR="$(realpath "$(dirname "$(realpath "$0")")/../yay")"
 
 YAY_URL="https://aur.archlinux.org/yay.git"
 
