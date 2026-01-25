@@ -6,7 +6,7 @@ from pathlib import Path
 
 DEPS = ["fakeroot", "debugedit", "git"]
 
-YAY_DIR = Path(__file__).parent / "yay"
+YAY_DIR = Path(__file__).parent.parent / "yay"
 YAY_URL = "https://aur.archlinux.org/yay.git"
 
 if YAY_DIR.exists():
