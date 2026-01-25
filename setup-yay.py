@@ -4,7 +4,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-DEPS = ["fakeroot", "debugedit", "git"]
+DEPS = ["fakeroot", "debugedit", "git", "make", "curl", "go"]
 
 YAY_DIR = Path(__file__).parent.parent / "yay"
 YAY_URL = "https://aur.archlinux.org/yay.git"
