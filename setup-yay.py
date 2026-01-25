@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -9,7 +10,7 @@ DEPS = ["fakeroot", "debugedit", "git", "make", "curl", "go", "gcc"]
 YAY_DIR = Path(__file__).parent.parent / "yay"
 YAY_URL = "https://aur.archlinux.org/yay.git"
 
-if subprocess.run(["command", "-v", "yay"]).returncode == 0:
+if shutil.which("yay") is not None:
     print("Yay is already installed.")
     sys.exit(0)
 
