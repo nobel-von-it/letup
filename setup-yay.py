@@ -6,11 +6,11 @@ import subprocess
 import sys
 from pathlib import Path
 
-DEPS = ["fakeroot", "debugedit", "git", "make", "curl", "go", "gcc"]
+DEPS = ["fakeroot", "debugedit", "git", "make", "curl"]
 
 REAL_USER = os.getlogin()
 YAY_DIR = Path(__file__).parent.parent / "yay"
-YAY_URL = "https://aur.archlinux.org/yay.git"
+YAY_URL = "https://aur.archlinux.org/yay-bin.git"
 
 if os.geteuid() != 0:
     print("Please run this script as root.")
