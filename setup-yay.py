@@ -26,4 +26,15 @@ if not YAY_DIR.exists():
     _ = subprocess.run(
         ["sudo", "-u", REAL_USER, "git", "clone", YAY_URL, YAY_DIR], check=True
     )
-_ = subprocess.run(["sudo", "-u", REAL_USER, "makepkg", "-si"], cwd=YAY_DIR, check=True)
+
+
+_ = subprocess.run(["sudo", "-u", REAL_USER, "makepkg", "-f"], cwd=YAY_DIR, check=True)
+res = subprocess.run(
+    ["sudo", "-u", REAL_USER, "makepkg", "--packagelist"], cwd=YAY_DIR, check=True
+)
+pkg_path = res.stdout.strip()
+
+_ = subprocess.run(
+    ["pacman", "-U", "--needed", "--noconfirm", pkg_path],
+    check=True,
+)
