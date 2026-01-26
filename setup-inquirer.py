@@ -14,8 +14,16 @@ if os.geteuid() != 0:
     print("Please run this script as root.")
     os.execvp("sudo", ["sudo", "-E", sys.executable, *sys.argv])
 
+if shutil.which("yay") is None and YAY_SCRIPT_PATH.exists():
+    _ = subprocess.run([sys.executable, str(YAY_SCRIPT_PATH)], check=True)
 
-def yay_with_args(pkgs: list[str]) -> None:
+sudoers_path = Path(f"/etc/sudoers.d/setup_temp_{REAL_USER}")
+with open(sudoers_path, "w") as f:
+    _ = f.write(f"{REAL_USER} ALL=(ALL) NOPASSWD: /usr/bin/pacman\n")
+
+os.chmod(sudoers_path, 0o440)
+
+try:
     _ = subprocess.run(
         [
             "sudo",
@@ -29,13 +37,10 @@ def yay_with_args(pkgs: list[str]) -> None:
             "--noanswerdiff",
             "--noasweredit",
             "--noanswerupgrade",
-            *pkgs,
+            "python-inquirer",
         ],
         check=True,
     )
-
-
-if shutil.which("yay") is None and YAY_SCRIPT_PATH.exists():
-    _ = subprocess.run([sys.executable, str(YAY_SCRIPT_PATH)], check=True)
-
-yay_with_args(["python-inquirer"])
+finally:
+    if sudoers_path.exists():
+        sudoers_path.unlink()
