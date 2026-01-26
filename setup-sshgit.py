@@ -8,7 +8,14 @@ import subprocess
 import sys
 from pathlib import Path
 
+REAL_USER = os.getlogin()
+HOME_DIR = Path(os.path.expanduser(f"~{REAL_USER}"))
+
 INQUIRER_SCRIPT_PATH = Path(__file__).parent / "setup-inquirer.py"
+
+if os.geteuid() != 0:
+    print("Please run this script as root.")
+    os.execvp("sudo", ["sudo", "-E", sys.executable, *sys.argv])
 
 try:
     import inquirer
@@ -29,7 +36,7 @@ DEPS = ["openssh"]
 
 DEFAULT_EMAIL = "maksimdavydenko12@gmail.com"
 DEFAULT_NAME = "nobel-von-it"
-KEY_PATH = Path.home() / ".ssh/id_ed25519"
+KEY_PATH = HOME_DIR / ".ssh/id_ed25519"
 
 KNOWN_HOSTS = [
     "github.com",
@@ -40,7 +47,7 @@ KNOWN_HOSTS_PATH = KEY_PATH.parent / "known_hosts"
 GITHUB_SSH_URL = "https://github.com/settings/ssh/new"
 CODEBERG_SSH_URL = "https://codeberg.org/user/settings/keys"
 
-_ = subprocess.run(["sudo", "pacman", "-S", "--needed", *DEPS], check=True)
+_ = subprocess.run(["pacman", "-S", "--needed", "--noconfirm", *DEPS], check=True)
 
 
 def inquirer_questions() -> tuple[str, str]:
