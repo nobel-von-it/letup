@@ -23,6 +23,7 @@ if shutil.which("yay") is not None:
 
 _ = subprocess.run(["pacman", "-S", "--needed", "--noconfirm", *DEPS], check=True)
 if not YAY_DIR.exists():
-    _ = subprocess.run(["git", "clone", YAY_URL, YAY_DIR], check=True)
-    _ = subprocess.run(["chown", "-R", f"{REAL_USER}:{REAL_USER}", YAY_DIR], check=True)
+    _ = subprocess.run(
+        ["sudo", "-u", REAL_USER, "git", "clone", YAY_URL, YAY_DIR], check=True
+    )
 _ = subprocess.run(["sudo", "-u", REAL_USER, "makepkg", "-si"], cwd=YAY_DIR, check=True)
