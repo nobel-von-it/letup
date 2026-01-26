@@ -35,7 +35,7 @@ try:
             "--noconfirm",
             "--noanswerclean",
             "--noanswerdiff",
-            "--noasweredit",
+            "--noansweredit",
             "--noanswerupgrade",
             "python-inquirer",
         ],
