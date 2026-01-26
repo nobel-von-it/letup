@@ -47,7 +47,7 @@ KNOWN_HOSTS_PATH = KEY_PATH.parent / "known_hosts"
 GITHUB_SSH_URL = "https://github.com/settings/ssh/new"
 CODEBERG_SSH_URL = "https://codeberg.org/user/settings/keys"
 
-_ = subprocess.run(["pacman", "-S", "--needed", *DEPS], check=True)
+_ = subprocess.run(["pacman", "-S", "--needed", "--noconfirm", *DEPS], check=True)
 
 
 def inquirer_questions() -> tuple[str, str]:
