@@ -20,6 +20,7 @@ CONFIG_NAMES = [
     "ghostty",
     "kitty",
     "clang",
+    "obsidian",
     "minvim:nvim",
     "fish",
     "zsh",
@@ -111,6 +112,17 @@ def zsh_config(src_path: Path) -> None:
     link_config(src_path, Path.home(), "zsh/.zshrc:.zshrc")
 
 
+def obsidian_config(src_path: Path, dest_path: Path) -> None:
+    link_config(src_path, dest_path, "obsidian/obsidian.conf:obsidian.conf")
+    mo_path = os.getenv("MO_BASE_PATH")
+    if not mo_path:
+        return
+    snippets_path = Path(mo_path) / ".obsidian/snippets"
+    if snippets_path.exists() and snippets_path.is_dir():
+        os.rmdir(snippets_path)
+    link_config(src_path, Path(mo_path), "obsidian/snippets:.obsidian/snippets")
+
+
 def ohmyzsh_config() -> None:
     _ = os.system(
         'sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"'
@@ -127,6 +139,8 @@ def setup_configs(src_path: Path, dest_path: Path, configs: list[str]) -> None:
             zsh_config(src_path)
         elif config == "ohmyzsh":
             ohmyzsh_config()
+        elif config == "obsidian":
+            obsidian_config(src_path, dest_path)
         else:
             link_config(src_path, dest_path, config)
 

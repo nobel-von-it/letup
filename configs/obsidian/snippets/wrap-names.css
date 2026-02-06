@@ -1,0 +1,13 @@
+.nav-file-title-content,
+.nav-folder-title-content {
+    white-space: normal !important;
+    overflow-wrap: break-word !important;
+    word-break: break-word !important;
+    line-height: 1.2 !important;
+    padding-top: 2px;
+    padding-bottom: 2px;
+}
+
+.nav-folder-title, .nav-file-title {
+    align-items: flex-start !important;
+}
