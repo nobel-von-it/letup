@@ -1,0 +1,79 @@
+.theme-dark {
+    --bg: #1a1c23;
+    --fg: #aab1be;
+    --red: #b07b7b;
+    --green: #8da18d;
+    --yellow: #bfb48f;
+    --blue: #7a8ca3;
+    --magenta: #9e8ba3;
+    --cyan: #889ca6;
+    --grey: #4b5263;
+    --dark-grey: #2c323c;
+    --selection: #3e4452;
+
+    --background-primary: var(--bg);
+    --background-primary-alt: var(--bg);
+    --background-secondary: #16181e;
+    --background-modifier-border: var(--dark-grey);
+    
+    --text-normal: var(--fg);
+    --text-muted: var(--grey);
+    --text-faint: var(--dark-grey);
+    --text-accent: var(--blue);
+    
+    --font-monospace: "JetBrainsMono Nerd Font", monospace;
+
+    --text-selection: var(--selection);
+    --background-modifier-hover: rgba(75, 82, 99, 0.2);
+    --background-active-visual: var(--selection);
+}
+
+.markdown-rendered h1, .cm-header-1 { color: var(--blue) !important; font-weight: bold; }
+.markdown-rendered h2, .cm-header-2 { color: var(--magenta) !important; font-weight: bold; }
+.markdown-rendered h3, .cm-header-3 { color: var(--cyan) !important; font-weight: bold; }
+.markdown-rendered h4, .cm-header-4 { color: var(--green) !important; }
+.markdown-rendered h5, .cm-header-5 { color: var(--yellow) !important; }
+.markdown-rendered h6, .cm-header-6 { color: var(--red) !important; }
+
+.cm-s-obsidian .cm-comment { color: var(--grey) !important; font-style: italic !important; }
+.cm-s-obsidian .cm-string { color: var(--green) !important; }
+.cm-s-obsidian .cm-keyword { color: var(--magenta) !important; }
+.cm-s-obsidian .cm-variable, .cm-s-obsidian .cm-property { color: var(--fg) !important; }
+.cm-s-obsidian .cm-function { color: var(--blue) !important; }
+.cm-s-obsidian .cm-number, .cm-s-obsidian .cm-atom { color: var(--yellow) !important; }
+.cm-s-obsidian .cm-operator, .cm-s-obsidian .cm-type { color: var(--cyan) !important; }
+
+.markdown-rendered code, .cm-inline-code {
+    background-color: var(--dark-grey) !important;
+    color: var(--cyan) !important;
+}
+
+pre[class*="language-"], .cm-codeblock {
+    background-color: var(--dark-grey) !important;
+}
+
+.task-list-item-checkbox {
+    border: 1px solid var(--grey) !important;
+}
+.task-list-item-checkbox:checked {
+    background-color: var(--green) !important;
+}
+
+.external-link, .internal-link {
+    color: var(--blue) !important;
+    text-decoration: none;
+}
+
+.callout[data-callout="info"] { --callout-color: var(--blue); }
+.callout[data-callout="warning"] { --callout-color: var(--yellow); }
+.callout[data-callout="error"] { --callout-color: var(--red); }
+.callout[data-callout="success"] { --callout-color: var(--green); }
+
+.nav-file-title.is-active {
+    background-color: var(--selection) !important;
+    color: var(--blue) !important;
+}
+
+.is-flashing {
+    background-color: rgba(191, 180, 143, 0.3) !important;
+}
