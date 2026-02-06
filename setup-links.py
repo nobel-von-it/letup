@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 
 import os
+import shutil
+import subprocess
 import sys
 from pathlib import Path
 
@@ -81,6 +83,7 @@ def link_config(src_path: Path, dest_path: Path, config: str) -> None:
 
     full_src_path = src_path / orig_name
     full_dest_path = dest_path / link_name
+
     print(f"  -* Checking {full_dest_path}")
     if full_dest_path.is_symlink():
         print(f"    -* Removing symlink {full_dest_path}")
@@ -89,6 +92,8 @@ def link_config(src_path: Path, dest_path: Path, config: str) -> None:
         print(f"    -* {full_dest_path} is not a symlink")
         print("Aborted")
         sys.exit(1)
+
+    full_dest_path.parent.mkdir(parents=True, exist_ok=True)
     os.symlink(full_src_path, full_dest_path)
     print(f"    -* Linked {config}")
 
@@ -99,7 +104,11 @@ def tmux_config(src_path: Path, dest_path: Path) -> None:
     tpm_path = dest_path / "tmux/plugins/tpm"
     tpm_url = "https://github.com/tmux-plugins/tpm"
     if not tpm_path.exists():
-        if os.system(f"git clone --depth=1 {tpm_url} {tpm_path}") != 0:
+        try:
+            _ = subprocess.run(
+                ["git", "clone", "--depth=1", tpm_url, str(tpm_path)], check=True
+            )
+        except subprocess.CalledProcessError:
             print("Aborted by git clone for tpm")
             sys.exit(1)
 
@@ -114,19 +123,25 @@ def zsh_config(src_path: Path) -> None:
 
 def obsidian_config(src_path: Path, dest_path: Path) -> None:
     link_config(src_path, dest_path, "obsidian/obsidian.conf:obsidian.conf")
+
     mo_path = os.getenv("MO_BASE_PATH")
     if not mo_path:
         return
     snippets_path = Path(mo_path) / ".obsidian/snippets"
     if snippets_path.exists() and snippets_path.is_dir():
-        os.rmdir(snippets_path)
+        if snippets_path.is_symlink():
+            os.unlink(snippets_path)
+        elif snippets_path.is_dir():
+            shutil.rmtree(snippets_path)
     link_config(src_path, Path(mo_path), "obsidian/snippets:.obsidian/snippets")
 
 
 def ohmyzsh_config() -> None:
-    _ = os.system(
-        'sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"'
-    )
+    cmd = 'sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"'
+    try:
+        _ = subprocess.run(cmd, shell=True, check=True)
+    except subprocess.CalledProcessError:
+        print("Failed to install Oh My Zsh")
 
 
 def setup_configs(src_path: Path, dest_path: Path, configs: list[str]) -> None:
