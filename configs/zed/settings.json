@@ -7,15 +7,34 @@
 // custom settings, run `zed: open default settings` from the
 // command palette (cmd-shift-p / ctrl-shift-p)
 {
+  "outline_panel": {
+    "dock": "right",
+  },
   "agent": {
     "default_model": {
-      "provider": "ollama",
-      "model": "gpt-oss:20b"
+      "provider": "copilot_chat",
+      "model": "gpt-5-mini",
     },
-    "model_parameters": []
+    "favorite_models": [],
+    "model_parameters": [],
   },
-  "outline_panel": {
-    "dock": "right"
+  "git_panel": {
+    "dock": "right",
+  },
+  "which_key": {
+    "enabled": true,
+  },
+  "icon_theme": {
+    "mode": "system",
+    "light": "Zed (Default)",
+    "dark": "Zed (Default)",
+  },
+  "telemetry": {
+    "diagnostics": false,
+    "metrics": false,
+  },
+  "session": {
+    "trust_all_worktrees": true,
   },
   "vim_mode": true,
   "ui_font_size": 16,
@@ -23,35 +42,36 @@
   "theme": {
     "mode": "system",
     "light": "One Light",
-    "dark": "One Dark"
+    "dark": "Melancholy",
+  },
+  "inlay_hints": {
+    "enabled": true,
+    "show_type_hints": true,
+    "show_parameter_hints": true,
+    "show_other_hints": true,
   },
   "lsp": {
     "rust-analyzer": {
       "initialization_options": {
         "check": {
-          "command": "clippy"
-        }
-      }
-    }
+          "command": "clippy",
+        },
+        "inlayHints": {
+          "typeHints": {
+            "enable": true,
+          },
+          "parameterHints": {
+            "enable": true,
+          },
+          "chainingHints": {
+            "enable": true,
+          },
+          "closingBraceHints": {
+            "enable": true,
+            "minLines": 25,
+          },
+        },
+      },
+    },
   },
-  // "proxy": "http://127.0.0.1:10808",
-  "auto_install_extensions": {
-    "rust-snippets": true,
-    "html": true,
-    "html-snippets": true,
-    "toml": true,
-    "git-firefly": true,
-    "make": true
-  },
-  "minimap": {
-    "show": "auto",
-    "thumb": "always",
-    "thumb_border": "left_open",
-    "current_line_highlight": "line"
-  },
-  "tabs": {
-    "file_icons": true,
-    "git_status": true,
-    "show_diagnostics": "errors"
-  }
 }
