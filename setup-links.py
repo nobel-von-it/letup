@@ -147,7 +147,7 @@ def ohmyzsh_config() -> None:
 
 def zapret_config(src_path: Path, dest_path: Path) -> None:
     zapret_url = "https://github.com/Sergeydigl3/zapret-discord-youtube-linux.git"
-    zapret_path = Path(__file__).parent.parent / "zapret"
+    zapret_path = Path(__file__).parent.parent / "zapret-discord-youtube-linux"
     try:
         _ = subprocess.run(
             ["git", "clone", "--depth=1", zapret_url, zapret_path], check=True
@@ -159,7 +159,7 @@ def zapret_config(src_path: Path, dest_path: Path) -> None:
     conf_env_path = zapret_path / "conf.env"
     with conf_env_path.open("a", encoding="utf-8") as f:
         # TODO: interaction
-        f.write("strategy=general_alt2.bat\ninterface = wlan0\ngamefilter = true")
+        f.write("strategy=general_alt2.bat\ninterface=wlan0\ngamefilter=true\n")
     main_script_path = zapret_path / "main_script.sh"
 
     try:
