@@ -165,8 +165,10 @@ def zapret_config(src_path: Path, dest_path: Path) -> None:
     try:
         new_sudoers_path = "/etc/sudoers.d/10_zapret"
         sudoers_zapret_content = (
-            f"nimirus ALL=(ALL) NOPASSWD: {main_script_path.absolute()}"
+            f"nimirus ALL=(ALL) NOPASSWD: {main_script_path.absolute()}\n"
         )
+
+        _ = subprocess.run(["sudo", "-v"], check=True)
         _ = subprocess.run(
             ["sudo", "tee", new_sudoers_path],
             input=sudoers_zapret_content.encode("utf-8"),
