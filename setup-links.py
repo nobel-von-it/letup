@@ -30,6 +30,7 @@ CONFIG_NAMES = [
     "zed",
     "tmux",
     "swaylock",
+    "zapret",
     "sway",
     "niri",
     "waybar",
@@ -144,6 +145,52 @@ def ohmyzsh_config() -> None:
         print("Failed to install Oh My Zsh")
 
 
+def zapret_config(src_path: Path, dest_path: Path) -> None:
+    zapret_url = "https://github.com/Sergeydigl3/zapret-discord-youtube-linux.git"
+    zapret_path = Path(__file__).parent.parent / "zapret"
+    try:
+        _ = subprocess.run(
+            ["git", "clone", "--depth=1", zapret_url, zapret_path], check=True
+        )
+    except subprocess.CalledProcessError:
+        print("Aborted by git clone for zapret")
+        sys.exit(1)
+
+    conf_env_path = zapret_path / "conf.env"
+    with conf_env_path.open("a", encoding="utf-8") as f:
+        # TODO: interaction
+        f.write("strategy=general_alt2.bat\ninterface = wlan0\ngamefilter = true")
+    main_script_path = zapret_path / "main_script.sh"
+
+    try:
+        new_sudoers_path = "/etc/sudoers.d/10_zapret"
+        sudoers_zapret_content = (
+            f"nimirus ALL=(ALL) NOPASSWD {main_script_path.absolute()}"
+        )
+        _ = subprocess.run(
+            ["sudo", "tee", new_sudoers_path],
+            input=sudoers_zapret_content.encode("utf-8"),
+            check=True,
+            stdout=subprocess.PIPE,
+        )
+        _ = subprocess.run(["sudo", "chmod", "0440", new_sudoers_path], check=True)
+    except subprocess.CalledProcessError:
+        print("Aborted by tee or chmod zapret")
+        sys.exit(1)
+
+    link_config(
+        src_path, dest_path, "zapret/zapret.service:systemd/user/zapret.service"
+    )
+
+    try:
+        _ = subprocess.run(
+            ["systemctl", "--user", "enable", "--now", "zapret"], check=True
+        )
+    except subprocess.CalledProcessError:
+        print("Aborted by systemctl enable zapret")
+        sys.exit(1)
+
+
 def setup_configs(src_path: Path, dest_path: Path, configs: list[str]) -> None:
     for config in configs:
         if config == "tmux":
@@ -156,6 +203,8 @@ def setup_configs(src_path: Path, dest_path: Path, configs: list[str]) -> None:
             ohmyzsh_config()
         elif config == "obsidian":
             obsidian_config(src_path, dest_path)
+        elif config == "zapret":
+            zapret_config(src_path, dest_path)
         else:
             link_config(src_path, dest_path, config)
 
