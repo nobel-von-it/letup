@@ -103,6 +103,25 @@ def main() -> None:
 
     _ = subprocess.run(["ssh-add", str(KEY_PATH)], check=True)
 
+    user_info = pwd.getpwnam(REAL_USER)
+    uid = user_info.pw_uid
+    gid = user_info.pw_gid
+
+    # Список путей для смены владельца и прав
+    ssh_dir = KEY_PATH.parent
+    pub_key_path = KEY_PATH.with_suffix(".pub")
+
+    # Смена владельца рекурсивно на папку .ssh
+    for item in [ssh_dir, KEY_PATH, pub_key_path, KNOWN_HOSTS_PATH]:
+        if item.exists():
+            os.chown(item, uid, gid)
+
+    # Установка прав (chmod)
+    ssh_dir.chmod(0o700)           # drwx------
+    KEY_PATH.chmod(0o600)          # -rw-------
+    pub_key_path.chmod(0o644)      # -rw-r--r--
+    KNOWN_HOSTS_PATH.chmod(0o644)  # -rw-r--r--
+
     pub_key = KEY_PATH.with_suffix(".pub").read_text()
     if shutil.which("wl-copy") is not None:
         _ = subprocess.run(["wl-copy"], input=pub_key, text=True, check=True)
