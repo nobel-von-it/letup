@@ -135,6 +135,7 @@ def obsidian_config(src_path: Path, dest_path: Path) -> None:
         elif snippets_path.is_dir():
             shutil.rmtree(snippets_path)
     link_config(src_path, Path(mo_path), "obsidian/snippets:.obsidian/snippets")
+    link_config(src_path, Path(mo_path), "../mo-scripts:Resources/Scripts")
 
 
 def ohmyzsh_config() -> None:
