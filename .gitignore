@@ -1,5 +1,6 @@
 *.tar.gz
 .ruff_cache
+.venv
 configs/tmux/plugins/
 
 test-*.py
