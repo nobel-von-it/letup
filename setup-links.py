@@ -126,7 +126,7 @@ def obsidian_config(src_path: Path, dest_path: Path) -> None:
     link_config(src_path, dest_path, "obsidian/obsidian.conf:obsidian.conf")
 
     mo_path = os.getenv("MO_BASE_PATH")
-    if not mo_path:
+    if not mo_path or mo_path == "":
         return
     snippets_path = Path(mo_path) / ".obsidian/snippets"
     if snippets_path.exists() and snippets_path.is_dir():
