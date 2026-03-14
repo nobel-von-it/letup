@@ -24,6 +24,50 @@ fish_vi_key_bindings
 
 set -U fish_greeting ""
 
+function unlock_vault
+    set -l vault_path "/mnt/vault"
+
+    # Проверяем, смонтирована ли вообще флешка
+    if test -d "$vault_path/.gnupg"
+        # 1. GPG
+        set -gx GNUPGHOME "$vault_path/.gnupg"
+        
+        # 2. SSH (с проверкой, что ключ не добавлен повторно)
+        if not set -q SSH_AUTH_SOCK
+            eval (ssh-agent -c) > /dev/null
+        end
+        
+        if test -f "$vault_path/.ssh/id_ed25519"
+            # Добавляем, только если его еще нет в агенте
+            if not ssh-add -l | grep -q (ssh-keygen -lf "$vault_path/.ssh/id_ed25519" | awk '{print $2}')
+                ssh-add "$vault_path/.ssh/id_ed25519" 2>/dev/null
+            end
+        end
+
+        # 3. Уведомление
+        if status is-interactive
+            echo (set_color green)"🔒 Vault mounted: GPG & SSH keys active."(set_color normal)
+        end
+
+        # 4. KeePassXC
+        if status is-interactive; and not pgrep -x keepassxc > /dev/null
+            set -l db_files (ls $vault_path/*.kdbx 2>/dev/null)
+            if test -n "$db_files[1]"
+                nohup keepassxc $db_files[1] >/dev/null 2>&1 &
+                disown
+            end
+        end
+    else
+        # Очистка, если флешка отключена
+        if set -q GNUPGHOME; set -e GNUPGHOME; end
+    end
+end
+
+# Авто-запуск при открытии терминала
+if status is-interactive
+    unlock_vault
+end
+
 # Path setup
 set -gx PATH /usr/lib/emscripten /opt/cuda/bin "$HOME/.local/bin" "$HOME/.ghcup/bin" "$HOME/.cargo/bin" "$HOME/.local/share/bob/nvim-bin" "$HOME/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/" $PATH
 set -gx LD_LIBRARY_PATH /opt/cuda/lib64 $LD_LIBRARY_PATH
