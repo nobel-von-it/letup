@@ -51,7 +51,7 @@ function unlock_vault
 
         # 4. KeePassXC
         if status is-interactive; and not pgrep -x keepassxc > /dev/null
-            set -l db_files (ls $vault_path/*.kdbx 2>/dev/null)
+            set -l db_files (ls $vault_path/system_data.kdbx 2>/dev/null)
             if test -n "$db_files[1]"
                 nohup keepassxc $db_files[1] >/dev/null 2>&1 &
                 disown
