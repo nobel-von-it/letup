@@ -77,7 +77,7 @@ def inquirer_questions() -> tuple[Path, Path, list[str]]:
     return (Path(answers["src"]), Path(answers["dest"]), answers["configs"])
 
 
-def link_config(src_path: Path, dest_path: Path, config: str) -> None:
+def link_config(src_path: Path, dest_path: Path, config: str, hardlink: bool = False) -> None:
     names = config.split(":")
 
     orig_name, link_name = names if len(names) == 2 else (config, config)
@@ -95,7 +95,10 @@ def link_config(src_path: Path, dest_path: Path, config: str) -> None:
         sys.exit(1)
 
     full_dest_path.parent.mkdir(parents=True, exist_ok=True)
-    os.symlink(full_src_path, full_dest_path)
+    if hardlink and full_src_path.is_file():
+        os.link(full_src_path, full_dest_path)
+    else:
+        os.symlink(full_src_path, full_dest_path)
     print(f"    -* Linked {config}")
 
 
@@ -135,7 +138,8 @@ def obsidian_config(src_path: Path, dest_path: Path) -> None:
         elif snippets_path.is_dir():
             shutil.rmtree(snippets_path)
     link_config(src_path, Path(mo_path), "obsidian/snippets:.obsidian/snippets")
-    link_config(src_path, Path(mo_path), "../mo-scripts:Resources/Scripts")
+    link_config(src_path, Path(mo_path), "../mo-scripts/create-game-project.js:Resources/Scripts/create-game-project.js", hardlink=True)
+    link_config(src_path, Path(mo_path), "../mo-scripts/create-project.js:Resources/Scripts/create-project.js", hardlink=True)
 
 
 def ohmyzsh_config() -> None:
