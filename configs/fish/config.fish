@@ -80,7 +80,7 @@ set -gx LOCAL_HOST "127.0.0.1:3000"
 # Case sensitivity
 set -gx CASE_SENSITIVE false
 set -gx QT_QPA_PLATFORMTHEME qt5ct
-set -gx GTK_THEME Adwaita-dark
+# set -gx GTK_THEME Adwaita-dark
 
 set -gx PROJECTS "$HOME/Dev/projs/"
 set -gx TESTS "$HOME/Dev/tests/"
@@ -105,3 +105,8 @@ set -gx STEAM_GAMES "$HOME/.local/share/Steam/steamapps/compatdata"
 
 # SYM Syncthing
 set -gx SYNCTHING_ADDR "127.0.0.1:8384"
+
+# Android & Java LSP setup
+set -gx ANDROID_HOME "$HOME/Android/Sdk"
+set -gx JAVA_HOME "/opt/android-studio/jbr"
+fish_add_path "$JAVA_HOME/bin"
