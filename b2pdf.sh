@@ -26,6 +26,32 @@ echo "======================================"
 echo "Исходный файл: $FILENAME"
 echo "======================================"
 
+# Функция для стандартизации PDF (обрезка полей, размер A5, зеркальные поля)
+normalize_to_a5_book() {
+    local input="$1"
+    local output="$2"
+    local temp_cropped="${output%.*}_temp_cropped.pdf"
+    local temp_a5="${output%.*}_temp_a5.pdf"
+    
+    echo "Оптимизирую читаемость (обрезка полей, масштабирование)..."
+    
+    # 1. Сначала обрезаем лишние белые поля оригинала, оставляя небольшой отступ
+    pdfcrop --margins '2 2 2 2' "$input" "$temp_cropped" > /dev/null 2>&1
+    
+    # 2. Приводим к формату A5 и нормализуем структуру через Ghostscript
+    # Так как мы обрезали поля, текст теперь будет занимать максимум места на A5
+    gs -sDEVICE=pdfwrite -dCompatibilityLevel=1.4 -dPDFSETTINGS=/printer \
+       -dNOPAUSE -dQUIET -dBATCH -sPAPERSIZE=a5 \
+       -dFIXEDMEDIA -dPDFFitPage \
+       -sOutputFile="$temp_a5" "$temp_cropped"
+       
+    # 3. Добавляем стандартные книжные поля (с учетом зеркальности для переплета)
+    # Используем масштаб 0.88 для баланса между размером текста и полями
+    pdfjam --twoside --offset '5mm -1mm' --scale 0.88 --paper a5paper "$temp_a5" --outfile "$output" > /dev/null 2>&1
+    
+    rm "$temp_cropped" "$temp_a5"
+}
+
 # ЭТАП 1: Создание правильного A5
 case "$EXTENSION" in
     epub|fb2)
@@ -61,8 +87,16 @@ case "$EXTENSION" in
         ;;
         
     djvu)
-        echo "Формат: DjVu. Конвертирую напрямую..."
-        ddjvu -format=pdf "$INPUT_FILE" "$A5_OUTPUT"
+        echo "Формат: DjVu. Конвертирую и стандартизирую..."
+        TEMP_RAW="${BASENAME}_raw.pdf"
+        ddjvu -format=pdf "$INPUT_FILE" "$TEMP_RAW"
+        normalize_to_a5_book "$TEMP_RAW" "$A5_OUTPUT"
+        rm "$TEMP_RAW"
+        ;;
+        
+    pdf)
+        echo "Формат: PDF. Запускаю процесс стандартизации..."
+        normalize_to_a5_book "$INPUT_FILE" "$A5_OUTPUT"
         ;;
         
     *)
@@ -75,8 +109,10 @@ esac
 if [ -f "$A5_OUTPUT" ]; then
     echo "Создаю версию для печати (спуск полос на тетради по 16 страниц)..."
     
-    # pdfbook2 по умолчанию создает файл с приставкой -book
-    pdfbook2 --signature=16 --short-edge "$A5_OUTPUT" > /dev/null 2>&1
+    # --no-crop важен, чтобы pdfbook2 не "съедал" поля, которые мы создали выше
+    pdfbook2 --no-crop --signature=16 --short-edge \
+        --inner-margin 0 --outer-margin 0 --top-margin 0 --bottom-margin 0 \
+        "$A5_OUTPUT" > /dev/null 2>&1
     
     # Переименовываем результат для красоты
     if [ -f "${BASENAME}_A5-book.pdf" ]; then
