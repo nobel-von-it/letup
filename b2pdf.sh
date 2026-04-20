@@ -1,7 +1,25 @@
 #!/bin/bash
 
+# Установка зависимостей
+if [ "$1" = "-i" ] || [ "$1" = "--install" ]; then
+    echo "Устанавливаю зависимости для b2pdf..."
+    sudo apt update
+    # pdfbook2 входит в texlive-extra-utils
+    sudo apt install -y \
+        pandoc \
+        texlive-xetex \
+        texlive-extra-utils \
+        texlive-lang-cyrillic \
+        ghostscript \
+        djvulibre-bin \
+        fonts-dejavu
+    echo "Готово! Все зависимости установлены."
+    exit 0
+fi
+
 if [ -z "$1" ]; then
     echo "Использование: $0 <файл_книги>"
+    echo "         $0 -i | --install   — установить зависимости"
     exit 1
 fi
 
