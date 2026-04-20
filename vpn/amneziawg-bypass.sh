@@ -3,6 +3,7 @@
 # Configuration and Domains
 GITHUB_API="https://api.github.com/meta"
 CODEBERG_DOMAINS=("codeberg.org" "v2.codeberg.org")
+ARCH_DOMAINS=("aur.archlinux.org" "archlinux.org")
 DEFAULT_CONFIG="/etc/amnezia/amneziawg/usa1.conf"
 
 # Detection of default gateway and interface
@@ -40,6 +41,18 @@ get_codeberg_ips() {
 
 get_codeberg_ips6() {
     for domain in "${CODEBERG_DOMAINS[@]}"; do
+        python3 -c "import socket; [print(i[4][0]) for i in socket.getaddrinfo('$domain', 80, socket.AF_INET6)]" 2>/dev/null
+    done | sort -u
+}
+
+get_arch_ips() {
+    for domain in "${ARCH_DOMAINS[@]}"; do
+        python3 -c "import socket; [print(i[4][0]) for i in socket.getaddrinfo('$domain', 80, socket.AF_INET)]" 2>/dev/null
+    done | sort -u
+}
+
+get_arch_ips6() {
+    for domain in "${ARCH_DOMAINS[@]}"; do
         python3 -c "import socket; [print(i[4][0]) for i in socket.getaddrinfo('$domain', 80, socket.AF_INET6)]" 2>/dev/null
     done | sort -u
 }
@@ -93,6 +106,7 @@ run_bypass() {
     # IPv4
     IPS=$(get_github_ips)
     IPS+=" $(get_codeberg_ips)"
+    IPS+=" $(get_arch_ips)"
     for ip in $IPS; do
         manage_route "$ip" "$mode" "$GW" "$DEV"
     done
@@ -100,6 +114,7 @@ run_bypass() {
     # IPv6
     IPS6=$(get_github_ips6)
     IPS6+=" $(get_codeberg_ips6)"
+    IPS6+=" $(get_arch_ips6)"
     for ip in $IPS6; do
         manage_route6 "$ip" "$mode" "$GW6" "$DEV6"
     done
@@ -107,7 +122,7 @@ run_bypass() {
 }
 
 setup() {
-    local config=${1:-$DEFAULT_CONFIG}
+    local config=$(realpath ${1:-$DEFAULT_CONFIG})
     local script_path=$(realpath "$0")
     
     if [[ ! -f "$config" ]]; then
