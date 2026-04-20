@@ -1,42 +1,27 @@
 #!/bin/bash
 
+# ==========================================
 # Установка зависимостей
+# ==========================================
 if [ "$1" = "-i" ] || [ "$1" = "--install" ]; then
-    echo "Устанавливаю зависимости для b2pdf..."
+    echo "Устанавливаю зависимости..."
     sudo apt update
-    # pdfbook2 входит в texlive-extra-utils
-    sudo apt install -y \
-        pandoc \
-        texlive-xetex \
-        texlive-extra-utils \
-        texlive-lang-cyrillic \
-        ghostscript \
-        djvulibre-bin \
-        fonts-dejavu
-    echo "Готово! Все зависимости установлены."
+    sudo apt install -y pandoc texlive-xetex texlive-extra-utils texlive-latex-extra texlive-lang-cyrillic ghostscript djvulibre-bin fonts-dejavu calibre
+    echo "Готово!"
     exit 0
 fi
 
 if [ -z "$1" ]; then
     echo "Использование: $0 <файл_книги>"
-    echo "         $0 -i | --install   — установить зависимости"
     exit 1
 fi
 
 INPUT_FILE="$1"
-
-if [ ! -f "$INPUT_FILE" ]; then
-    echo "Ошибка: Файл '$INPUT_FILE' не найден."
-    exit 1
-fi
-
-# Извлечение имен
 FILENAME=$(basename "$INPUT_FILE")
 BASENAME="${FILENAME%.*}"
 EXTENSION="${FILENAME##*.}"
 EXTENSION=$(echo "$EXTENSION" | tr '[:upper:]' '[:lower:]')
 
-# Имена выходных файлов
 A5_OUTPUT="${BASENAME}_A5.pdf"
 PRINT_OUTPUT="${BASENAME}_PRINT.pdf"
 
@@ -44,105 +29,98 @@ echo "======================================"
 echo "Исходный файл: $FILENAME"
 echo "======================================"
 
-# Функция для стандартизации PDF (обрезка полей, размер A5, зеркальные поля)
-normalize_to_a5_book() {
-    local input="$1"
-    local output="$2"
-    local temp_cropped="${output%.*}_temp_cropped.pdf"
-    local temp_a5="${output%.*}_temp_a5.pdf"
-    
-    echo "Оптимизирую читаемость (обрезка полей, масштабирование)..."
-    
-    # 1. Сначала обрезаем лишние белые поля оригинала, оставляя небольшой отступ
-    pdfcrop --margins '2 2 2 2' "$input" "$temp_cropped" > /dev/null 2>&1
-    
-    # 2. Приводим к формату A5 и нормализуем структуру через Ghostscript
-    # Так как мы обрезали поля, текст теперь будет занимать максимум места на A5
-    gs -sDEVICE=pdfwrite -dCompatibilityLevel=1.4 -dPDFSETTINGS=/printer \
-       -dNOPAUSE -dQUIET -dBATCH -sPAPERSIZE=a5 \
-       -dFIXEDMEDIA -dPDFFitPage \
-       -sOutputFile="$temp_a5" "$temp_cropped"
-       
-    # 3. Добавляем стандартные книжные поля (с учетом зеркальности для переплета)
-    # Используем масштаб 0.88 для баланса между размером текста и полями
-    pdfjam --twoside --offset '5mm -1mm' --scale 0.88 --paper a5paper "$temp_a5" --outfile "$output" > /dev/null 2>&1
-    
-    rm "$temp_cropped" "$temp_a5"
-}
+# ==========================================
+# Создание LaTeX-преамбулы (Только для текстовых форматов)
+# ==========================================
+HEADER_TEX=$(mktemp)
+cat << 'EOF' > "$HEADER_TEX"
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[LE,RO]{\thepage}
+\fancyhead[RE]{\nouppercase{\leftmark}}
+\fancyhead[LO]{\nouppercase{\rightmark}}
+\renewcommand{\headrulewidth}{0.4pt}
+\usepackage{microtype}
+\sloppy
+\emergencystretch=1.5em
+\setlength{\parskip}{0pt}
+\setlength{\parindent}{1.5em}
+EOF
 
+# ==========================================
 # ЭТАП 1: Создание правильного A5
+# ==========================================
 case "$EXTENSION" in
-    epub|fb2)
-        echo "Формат: $EXTENSION. Запускаю Pandoc (XeLaTeX)..."
-        pandoc "$INPUT_FILE" -o "$A5_OUTPUT" \
-            -V papersize:a5 \
-            -V geometry:inner=17mm,outer=10mm,top=12mm,bottom=15mm \
-            -V fontsize=11pt \
+    epub|fb2|mobi|azw3)
+        TARGET_FILE="$INPUT_FILE"
+        if [[ "$EXTENSION" == "mobi" || "$EXTENSION" == "azw3" ]]; then
+            TARGET_FILE="${BASENAME}_temp.epub"
+            ebook-convert "$INPUT_FILE" "$TARGET_FILE" > /dev/null 2>&1
+        fi
+
+        echo "Верстаю книгу с идеальными полями..."
+        # Задаем ваши отступы: внутри 18мм, снаружи 8мм, верх/низ 10мм
+        pandoc "$TARGET_FILE" -o "$A5_OUTPUT" \
+            --pdf-engine=xelatex \
+            -V papersize=a5 \
+            -V fontsize=12pt \
             -V documentclass=book \
-            -V indent=true \
+            -V classoption=twoside \
+            -V geometry:inner=18mm,outer=8mm,top=10mm,bottom=10mm,includehead \
             -V lang=ru-RU \
             -V mainfont="DejaVu Serif" \
-            --pdf-engine=xelatex
-        ;;
-        
-    mobi|azw3)
-        echo "Формат: $EXTENSION. Конвертирую через Calibre в EPUB..."
-        TEMP_EPUB="${BASENAME}_temp.epub"
-        ebook-convert "$INPUT_FILE" "$TEMP_EPUB" > /dev/null 2>&1
-        
-        echo "Запускаю Pandoc (XeLaTeX)..."
-        pandoc "$TEMP_EPUB" -o "$A5_OUTPUT" \
-            -V papersize:a5 \
-            -V geometry:inner=17mm,outer=10mm,top=12mm,bottom=15mm \
-            -V fontsize=11pt \
-            -V documentclass=book \
-            -V indent=true \
-            -V lang=ru-RU \
-            -V mainfont="DejaVu Serif" \
-            --pdf-engine=xelatex
+            -V linestretch=1.15 \
+            -H "$HEADER_TEX"
             
-        rm "$TEMP_EPUB"
+        if [[ "$TARGET_FILE" == *"_temp.epub" ]]; then rm "$TARGET_FILE"; fi
         ;;
         
-    djvu)
-        echo "Формат: DjVu. Конвертирую и стандартизирую..."
-        TEMP_RAW="${BASENAME}_raw.pdf"
-        ddjvu -format=pdf "$INPUT_FILE" "$TEMP_RAW"
-        normalize_to_a5_book "$TEMP_RAW" "$A5_OUTPUT"
-        rm "$TEMP_RAW"
-        ;;
+    djvu|pdf)
+        echo "Формат: $EXTENSION. Подгоняю рамки под А5..."
         
-    pdf)
-        echo "Формат: PDF. Запускаю процесс стандартизации..."
-        normalize_to_a5_book "$INPUT_FILE" "$A5_OUTPUT"
+        TEMP_RAW="$INPUT_FILE"
+        if [ "$EXTENSION" = "djvu" ]; then
+            TEMP_RAW="${BASENAME}_raw.pdf"
+            ddjvu -format=pdf "$INPUT_FILE" "$TEMP_RAW"
+        fi
+
+        # Логика для PDF:
+        # 1. --trim '12mm 15mm 12mm 15mm': Отрезаем оригинальные белые края исходника.
+        # 2. --scale 0.93: Слегка уменьшаем оставшийся блок текста, чтобы он точно 
+        #    поместился на А5 и сформировал ваши поля 0.8-1см.
+        # 3. --offset '5mm 0mm': Сдвигаем всё на 5мм от центра для корешка (в сумме даст ~1.8см внутри).
+        
+        pdfjam --twoside \
+            --trim '12mm 15mm 12mm 15mm' --clip true \
+            --scale 1 \
+            --offset '5mm 0mm' \
+            --paper a5paper \
+            "$TEMP_RAW" --outfile "$A5_OUTPUT" > /dev/null 2>&1
+
+        if [ "$EXTENSION" = "djvu" ]; then rm "$TEMP_RAW"; fi
         ;;
         
     *)
-        echo "Ошибка: Формат .$EXTENSION не поддерживается."
+        echo "Ошибка: Формат не поддерживается."
+        rm -f "$HEADER_TEX"
         exit 1
         ;;
 esac
 
-# ЭТАП 2: Спуск полос и разбивка на тетради (pdfbook2)
+rm -f "$HEADER_TEX"
+
+# ==========================================
+# ЭТАП 2: Спуск полос
+# ==========================================
 if [ -f "$A5_OUTPUT" ]; then
-    echo "Создаю версию для печати (спуск полос на тетради по 16 страниц)..."
-    
-    # --no-crop важен, чтобы pdfbook2 не "съедал" поля, которые мы создали выше
+    echo "Создаю тетради для печати..."
     pdfbook2 --no-crop --signature=16 --short-edge \
         --inner-margin 0 --outer-margin 0 --top-margin 0 --bottom-margin 0 \
         "$A5_OUTPUT" > /dev/null 2>&1
     
-    # Переименовываем результат для красоты
     if [ -f "${BASENAME}_A5-book.pdf" ]; then
         mv "${BASENAME}_A5-book.pdf" "$PRINT_OUTPUT"
-        echo "======================================"
-        echo "ГОТОВО!"
-        echo "Версия для экрана: $A5_OUTPUT"
-        echo "Версия для ПЕЧАТИ: $PRINT_OUTPUT"
-        echo "======================================"
-    else
-        echo "Ошибка при создании версии для печати. Проверьте установлен ли pdfbook2."
+        echo "ГОТОВО! ЭКРАН: $A5_OUTPUT | ПЕЧАТЬ: $PRINT_OUTPUT"
     fi
-else
-    echo "Ошибка: Файл A5 не был создан."
 fi
