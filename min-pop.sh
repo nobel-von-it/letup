@@ -1,7 +1,7 @@
 #!/bin/bash
 
 sudo apt update
-sudo apt install -y ripgrep rustup fish eza pkg-config libssl-dev bpytop ffmpeg
+sudo apt install -y ripgrep rustup fish eza pkg-config libssl-dev bpytop ffmpeg syncthing
 
 rustup default stable
 
@@ -15,5 +15,7 @@ echo "deb [signed-by=/etc/apt/keyrings/antigravity-repo-key.gpg] https://us-cent
 
 sudo apt update
 sudo apt install -y antigravity
+
+systemctl --user enable --now syncthing.service
 
 chsh
