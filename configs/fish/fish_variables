@@ -1,6 +1,6 @@
 # This file contains fish universal variable definitions.
 # VERSION: 3.0
-SETUVAR __fish_initialized:4300
+SETUVAR __fish_initialized:3400
 SETUVAR fish_greeting:
 SETUVAR fish_user_paths:/opt/android\x2dstudio/jbr/bin
 SETUVAR pure_begin_prompt_with_current_directory:true
