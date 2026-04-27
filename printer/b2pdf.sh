@@ -37,9 +37,9 @@ cat << 'EOF' > "$HEADER_TEX"
 \usepackage{fancyhdr}
 \pagestyle{fancy}
 \fancyhf{}
-\fancyhead[LE,RO]{\thepage}
-\fancyhead[RE]{\nouppercase{\leftmark}}
-\fancyhead[LO]{\nouppercase{\rightmark}}
+\fancyhead[LE,RO]{\small\thepage}
+\fancyhead[RE]{\parbox[b]{0.9\textwidth}{\raggedleft\small\linespread{0.9}\selectfont\nouppercase{\leftmark}}}
+\fancyhead[LO]{\parbox[b]{0.9\textwidth}{\raggedright\small\linespread{0.9}\selectfont\nouppercase{\rightmark}}}
 \renewcommand{\headrulewidth}{0.4pt}
 \usepackage{microtype}
 \sloppy
@@ -64,13 +64,13 @@ case "$EXTENSION" in
         pandoc "$TARGET_FILE" -o "$A5_OUTPUT" \
             --pdf-engine=xelatex \
             -V papersize=a5 \
-            -V fontsize=12pt \
+            -V fontsize=11pt \
             -V documentclass=book \
             -V classoption=twoside \
-            -V geometry:inner=18mm,outer=8mm,top=10mm,bottom=10mm,includehead \
+            -V geometry:inner=18mm,outer=8mm,top=14mm,bottom=8mm,includehead,headheight=24pt,headsep=14pt \
             -V lang=ru-RU \
             -V mainfont="DejaVu Serif" \
-            -V linestretch=1.15 \
+            -V linestretch=1.05 \
             -H "$HEADER_TEX"
             
         if [[ "$TARGET_FILE" == *"_temp.epub" ]]; then rm "$TARGET_FILE"; fi
