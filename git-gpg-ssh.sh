@@ -24,7 +24,26 @@ git config --global user.email "maksimdavydenko12@gmail.com"
 git config --global commit.gpgsign true
 git config --global gpg.program gpg
 
-# Настройка SSH для Git (чтобы не вводить пароли)
-git config --global core.sshCommand "ssh -o IdentitiesOnly=yes -i /mnt/vault/.ssh/id_ed25519"
+# 4. Настройка SSH для Git (используем порт 443 для обхода блокировок порта 22)
+mkdir -p ~/.ssh
+cat > ~/.ssh/config <<EOF
+Host github.com
+    Hostname ssh.github.com
+    Port 443
+    User git
+    IdentityFile /mnt/vault/.ssh/id_ed25519
+    IdentitiesOnly yes
 
-echo "✅ Git успешно настроен для подписи коммитов ключом $GPG_KEY_ID!"
+Host codeberg.org
+    Hostname codeberg.org
+    Port 22
+    User git
+    IdentityFile /mnt/vault/.ssh/id_ed25519
+    IdentitiesOnly yes
+EOF
+chmod 600 ~/.ssh/config
+
+# Теперь Git будет использовать настройки из ~/.ssh/config
+git config --global core.sshCommand "ssh"
+
+echo "✅ Git успешно настроен для подписи коммитов ключом $GPG_KEY_ID и работы через порт 443!"

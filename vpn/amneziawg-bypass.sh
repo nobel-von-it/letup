@@ -127,15 +127,14 @@ run_bypass() {
     echo "Adding bypass routes via $GW ($DEV)..."
     
     local IPS=""
+    # Все байпасы временно отключены для отладки
     # IPS+="$(get_github_ips) " 
     # IPS+="$(get_codeberg_ips) "
     # IPS+="$(get_arch_ips) "
     
-    # Fallback if IPS is too short (means APIs failed)
-    if [[ ${#IPS} -lt 50 ]]; then
-        echo "Warning: API calls failed or returned too few IPs. Using fallback ranges."
-        IPS+=" 140.82.112.0/20 192.30.252.0/22 185.199.108.0/22 143.55.64.0/21 217.197.84.140 209.126.35.78 209.126.35.79"
-    fi
+    # if [[ ${#IPS} -lt 50 ]]; then
+    #     IPS+=" 140.82.112.0/20 192.30.252.0/22 185.199.108.0/22 143.55.64.0/21 217.197.84.140 209.126.35.78 209.126.35.79"
+    # fi
     
     for ip in $IPS; do
         manage_route "$ip" "add" "$GW" "$DEV"
