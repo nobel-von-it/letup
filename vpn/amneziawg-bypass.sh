@@ -127,9 +127,9 @@ run_bypass() {
     echo "Adding bypass routes via $GW ($DEV)..."
     
     local IPS=""
-    IPS+="$(get_github_ips) " 
-    IPS+="$(get_codeberg_ips) "
-    IPS+="$(get_arch_ips) "
+    # IPS+="$(get_github_ips) " 
+    # IPS+="$(get_codeberg_ips) "
+    # IPS+="$(get_arch_ips) "
     
     # Fallback if IPS is too short (means APIs failed)
     if [[ ${#IPS} -lt 50 ]]; then
