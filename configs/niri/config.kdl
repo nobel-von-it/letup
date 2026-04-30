@@ -5,7 +5,8 @@ prefer-no-csd
 input {
     keyboard {
         xkb {
-            layout "us"
+            layout "us,ru"
+            options "grp:win_space_toggle"
         }
     }
     touchpad {
@@ -17,12 +18,20 @@ input {
 output "*" {
     scale 1.0
 }
-output "eDP-1" {
-    position x=0 y=1080
-}
 output "HDMI-A-1" {
-    position x=1280 y=0
+    mode "2560x1440@100.000"
 }
+
+environment {
+    XDG_DATA_DIRS "/usr/local/share:/usr/share"
+    GBM_BACKEND "nvidia-drm"
+    __GLX_VENDOR_LIBRARY_NAME "nvidia"
+    LIBVA_DRIVER_NAME "nvidia"
+    QT_QPA_PLATFORM "wayland"
+    QT_QPA_PLATFORMTHEME "gtk3"
+    GTK_THEME "Adwaita-dark"
+}
+
 
 layout {
     gaps 2
@@ -57,11 +66,12 @@ layout {
 // == АВТОЗАПУСК ==
 spawn-at-startup "waybar"
 spawn-at-startup "mako"
-spawn-at-startup "swww-daemon"
 spawn-at-startup "xwayland-satellite"
-spawn-at-startup "fcitx5" "-d"
-spawn-at-startup "blueman-applet"
-spawn-at-startup "lxqt-policykit-agent"
+spawn-at-startup "/usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1"
+// spawn-at-startup "swww-daemon"
+// spawn-at-startup "fcitx5" "-d"
+// spawn-at-startup "blueman-applet"
+// spawn-at-startup "lxqt-policykit-agent"
 
 spawn-at-startup "swayidle" "-w" \
     "timeout" "300" "sh -c 'playerctl pause; swaylock -f'" \
@@ -72,16 +82,16 @@ spawn-at-startup "swayidle" "-w" \
 // Форсируем темную тему для GTK приложений (и браузеров)
 spawn-at-startup "gsettings" "set" "org.gnome.desktop.interface" "color-scheme" "prefer-dark"
 spawn-at-startup "gsettings" "set" "org.gnome.desktop.interface" "gtk-theme" "Adwaita-dark"
+spawn-at-startup "gsettings" "set" "org.gnome.desktop.interface" "icon-theme" "Papirus-Dark"
 
 spawn-at-startup "brightnessctl" "set" "30%"
 spawn-at-startup "syncthing" "--no-browser"
-spawn-at-startup "swww" "img" "~/Pictures/Wallpapers/wanderer-above-the-sea-of-fog-melancholy.png"
 
-spawn-at-startup "kitty"
-spawn-at-startup "obsidian"
-spawn-at-startup "firefox"
-spawn-at-startup "koala-clash"
-spawn-at-startup "Telegram"
+// spawn-at-startup "kitty"
+// spawn-at-startup "obsidian"
+// spawn-at-startup "firefox"
+// spawn-at-startup "koala-clash"
+// spawn-at-startup "Telegram"
 
 // == ПРАВИЛА ОКОН (WINDOW RULES) ==
 workspace "1-main" {
@@ -94,7 +104,7 @@ workspace "4-sys" {
 }
 
 window-rule {
-    match app-id=r"firefox|obsidian|Alacritty|org.telegram.desktop|libreoffice-writer|libreoffice-calc|org.qbittorrent.qBittorrent|calibre-gui|gamescope|kitty"
+    match app-id=r"firefox|obsidian|Alacritty|org.telegram.desktop|libreoffice-writer|libreoffice-calc|org.qbittorrent.qBittorrent|calibre-gui|gamescope|kitty|antigravity"
     open-maximized true
 }
 
@@ -104,7 +114,7 @@ window-rule {
 }
 
 window-rule {
-    match app-id=r"Alacritty|obsidian|libreoffice-writer|libreoffice-calc|kitty"
+    match app-id=r"Alacritty|obsidian|libreoffice-writer|libreoffice-calc|kitty|antigravity"
     open-on-workspace "2-work"
 }
 
@@ -114,7 +124,7 @@ window-rule {
 }
 
 window-rule {
-    match app-id=r"org.pulseaudio.pavucontrol|com.github.wwmm.easyeffects|koala-clash|blueman-manager|org.qbittorrent.qBittorrent"
+    match app-id=r"org.pulseaudio.pavucontrol|com.github.wwmm.easyeffects|koala-clash|blueman-manager|org.qbittorrent.qBittorrent|io.github.htkhiem.Euphonica"
     open-on-workspace "4-sys"
 }
 
@@ -127,7 +137,7 @@ window-rule {
 binds {
     Mod+Shift+Slash { show-hotkey-overlay; }
     // Mod+Return { spawn "alacritty" "-e" "sh" "-c" "tmux a || tmux"; }
-    Mod+Return { spawn "kitty"; }
+    Mod+Return { spawn "alacritty"; }
     Mod+P { spawn "fuzzel"; }
     Mod+C { close-window; }
     Mod+Shift+E { quit; }

@@ -70,8 +70,8 @@ set -gx LOCAL_HOST "127.0.0.1:3000"
 
 # Case sensitivity
 set -gx CASE_SENSITIVE false
-set -gx QT_QPA_PLATFORMTHEME qt5ct
-# set -gx GTK_THEME Adwaita-dark
+set -gx QT_QPA_PLATFORMTHEME gtk3
+set -gx GTK_THEME Adwaita-dark
 
 set -gx PROJECTS "$HOME/Dev/projs/"
 set -gx TESTS "$HOME/Dev/tests/"

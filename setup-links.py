@@ -33,9 +33,12 @@ CONFIG_NAMES = [
     "zapret",
     "sway",
     "niri",
+    "ironbar",
     "waybar",
     "fuzzel",
     "mako",
+    "gtk-3.0",
+    "gtk-4.0",
 ]
 
 
