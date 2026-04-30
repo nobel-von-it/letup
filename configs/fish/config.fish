@@ -31,6 +31,7 @@ function unlock_vault
     if test -d "$vault_path/.gnupg"
         # 1. GPG
         set -gx GNUPGHOME "$vault_path/.gnupg"
+        gpg-connect-agent "setenv DISPLAY=$DISPLAY" "setenv WAYLAND_DISPLAY=$WAYLAND_DISPLAY" "updatestartuptty" /bye > /dev/null 2>&1
         
         # 2. SSH (с проверкой, что ключ не добавлен повторно)
         if not set -q SSH_AUTH_SOCK
@@ -57,6 +58,7 @@ end
 # Авто-запуск при открытии терминала
 if status is-interactive
     unlock_vault
+    set -gx GPG_TTY (tty)
 end
 
 # Path setup
