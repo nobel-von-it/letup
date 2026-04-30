@@ -110,3 +110,12 @@ window#waybar {
     background-color: @bg;
     color: @fg;
 }
+
+#custom-launcher {
+    color: @blue;
+    padding: 0 15px;
+    font-size: 20px;
+    background-color: @dark_grey;
+    border-radius: 8px;
+    margin: 4px 0 4px 8px;
+}
