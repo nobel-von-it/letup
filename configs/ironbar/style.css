@@ -1,0 +1,252 @@
+@define-color bg      #1a1c23;
+@define-color fg      #aab1be;
+@define-color black   #2c323c;
+@define-color red     #b07b7b;
+@define-color green   #8da18d;
+@define-color yellow  #bfb48f;
+@define-color blue    #7a8ca3;
+@define-color magenta #9e8ba3;
+@define-color cyan    #889ca6;
+@define-color white   #d8dee9;
+@define-color dim     #4b5263;
+
+/* ── Global reset ─────────────────────────────────────────────── */
+* {
+    font-family: "JetBrainsMono Nerd Font", monospace;
+    font-size: 13px;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    text-shadow: none;
+    transition: background 150ms ease, color 150ms ease;
+}
+
+/* ── Bar window ───────────────────────────────────────────────── */
+window {
+    background: rgba(26, 28, 35, 0.92);
+    color: @fg;
+}
+
+/* inner container */
+.background {
+    padding: 0 4px;
+}
+
+/* ── Generic pill widget wrapper ──────────────────────────────── */
+.widget {
+    padding: 0 8px;
+    margin: 3px 2px;
+    background: rgba(44, 50, 60, 0.55);
+    border-radius: 6px;
+}
+
+/* ── Workspaces ───────────────────────────────────────────────── */
+.workspaces {
+    margin: 0;
+    padding: 0;
+}
+
+.workspaces .item {
+    min-width: 36px;
+    padding: 0 10px;
+    margin: 3px 2px;
+    background: rgba(44, 50, 60, 0.55);
+    color: @dim;
+    border-radius: 6px;
+    font-weight: 600;
+}
+
+.workspaces .item.focused {
+    background: @blue;
+    color: @bg;
+}
+
+.workspaces .item.visible {
+    background: rgba(122, 140, 163, 0.25);
+    color: @fg;
+    border: 1px solid rgba(122, 140, 163, 0.4);
+}
+
+.workspaces .item.urgent {
+    background: @red;
+    color: @bg;
+}
+
+.workspaces .item.inactive {
+    background: rgba(44, 50, 60, 0.30);
+    color: @dim;
+}
+
+.workspaces .item:hover {
+    background: rgba(122, 140, 163, 0.35);
+    color: @white;
+}
+
+/* ── Focused window title ─────────────────────────────────────── */
+.focused {
+    color: @fg;
+    font-style: italic;
+}
+
+/* ── CPU graph (Python script module) ────────────────────────── */
+.cpu-graph {
+    padding: 0 6px;
+    margin: 3px 2px;
+    background: rgba(44, 50, 60, 0.55);
+    border-radius: 6px;
+    font-size: 12px;
+    letter-spacing: -1px;  /* pack the block chars closer */
+}
+
+/* ── Sys info (memory) ────────────────────────────────────────── */
+.sys-info {
+    color: @magenta;
+    padding: 0 8px;
+    margin: 3px 2px;
+    background: rgba(44, 50, 60, 0.55);
+    border-radius: 6px;
+}
+
+/* ── Music ────────────────────────────────────────────────────── */
+.music {
+    color: @yellow;
+    padding: 0 8px;
+    margin: 3px 2px;
+    background: rgba(44, 50, 60, 0.55);
+    border-radius: 6px;
+}
+
+/* ── Clock ────────────────────────────────────────────────────── */
+.clock {
+    color: @cyan;
+    font-weight: 700;
+    padding: 0 10px;
+    margin: 3px 2px;
+    background: rgba(44, 50, 60, 0.55);
+    border-radius: 6px;
+}
+
+/* ── Volume ───────────────────────────────────────────────────── */
+.volume {
+    color: @magenta;
+    padding: 0 8px;
+    margin: 3px 2px;
+    background: rgba(44, 50, 60, 0.55);
+    border-radius: 6px;
+}
+
+/* ── Network ──────────────────────────────────────────────────── */
+.network-manager {
+    color: @green;
+    padding: 0 8px;
+    margin: 3px 2px;
+    background: rgba(44, 50, 60, 0.55);
+    border-radius: 6px;
+}
+
+/* ── Tray ─────────────────────────────────────────────────────── */
+.tray {
+    margin: 3px 4px;
+}
+
+.tray item {
+    padding: 0 3px;
+}
+
+/* ── Weather bar button ───────────────────────────────────────── */
+.weather {
+    padding: 0 8px;
+    margin: 3px 2px;
+    background: rgba(44, 50, 60, 0.55);
+    border-radius: 6px;
+    color: @yellow;
+}
+
+/* ── Weather popup ────────────────────────────────────────────── */
+.popup-weather {
+    padding: 16px 20px;
+    background: @bg;
+    border: 1px solid @black;
+    border-radius: 10px;
+    min-width: 280px;
+}
+
+.popup-weather #header {
+    font-size: 1.1em;
+    font-weight: 700;
+    color: @blue;
+    margin-bottom: 12px;
+    border-bottom: 1px solid @black;
+    padding-bottom: 6px;
+}
+
+.weather-row {
+    margin-bottom: 6px;
+    padding: 4px 0;
+}
+
+.weather-date {
+    font-weight: 700;
+    color: @fg;
+    min-width: 110px;
+}
+
+.weather-high  { color: @red;    margin: 0 8px; }
+.weather-avg   { color: @yellow; margin: 0 8px; font-weight: 700; }
+.weather-low   { color: @cyan;   margin: 0 8px; }
+
+/* ── Power menu bar button ────────────────────────────────────── */
+.power-menu {
+    margin: 3px 2px;
+}
+
+#power-btn {
+    color: @red;
+    background: rgba(44, 50, 60, 0.55);
+    padding: 0 10px;
+    border-radius: 6px;
+    margin: 3px 0;
+}
+
+#power-btn:hover {
+    background: rgba(176, 123, 123, 0.25);
+}
+
+/* ── Power menu popup ─────────────────────────────────────────── */
+.popup-power-menu {
+    padding: 16px 20px;
+    background: @bg;
+    border: 1px solid @black;
+    border-radius: 10px;
+}
+
+.popup-power-menu #header {
+    font-size: 1.1em;
+    font-weight: 700;
+    color: @blue;
+    margin-bottom: 14px;
+    border-bottom: 1px solid @black;
+    padding-bottom: 6px;
+}
+
+.popup-power-menu .power-btn {
+    font-size: 1.8em;
+    padding: 12px 22px;
+    margin: 4px;
+    background: @black;
+    color: @fg;
+    border-radius: 8px;
+}
+
+.popup-power-menu .power-btn:hover {
+    background: @blue;
+    color: @bg;
+}
+
+.popup-power-menu #uptime {
+    font-size: 0.85em;
+    color: @dim;
+    margin-top: 12px;
+    padding-top: 6px;
+    border-top: 1px solid @black;
+}

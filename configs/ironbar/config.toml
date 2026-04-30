@@ -1,0 +1,209 @@
+position = "top"
+anchor_to_edges = true
+height = 32
+name = "main"
+
+# Background task: update weather every 10 minutes
+# interval = 600000ms = 10 minutes
+[[start]]
+type = "script"
+cmd = "python3 ~/.config/ironbar/scripts/weather.py"
+interval = 600000
+show_if = "false"
+
+[[start]]
+type = "workspaces"
+all_monitors = true
+favorites = ["1-main", "2-work", "3-chat", "4-sys"]
+
+[start.name_map]
+"1-main" = "1  main"
+"2-work" = "2  work"
+"3-chat" = "3  chat"
+"4-sys"  = "4  sys"
+
+[[center]]
+type = "focused"
+show_icon = true
+show_title = true
+icon_size = 18
+truncate = "end"
+max_length = 50
+
+[[end]]
+type = "sys_info"
+format = ["  {memory_percent}%"]
+interval = {cpu = 1, memory = 2}
+
+[[end]]
+type = "script"
+cmd = "python3 ~/.config/ironbar/scripts/cpu_graph.py"
+interval = 1000
+class = "cpu-graph"
+use_markup = true
+
+[[end]]
+type = "music"
+player_type = "mpris"
+format = "{icon} {title}"
+truncate = "end"
+max_length = 25
+on_click_left = "playerctl play-pause"
+
+[[end]]
+type = "tray"
+
+[[end]]
+type = "network_manager"
+device = "enp5s0"
+format = "{icon} {name}"
+on_click_left = "networkmanager_dmenu"
+
+[[end]]
+type = "volume"
+format = "{icon} {percentage}%"
+on_click_right = "pavucontrol"
+
+[[end]]
+type = "custom"
+class = "weather"
+
+[[end.bar]]
+type = "button"
+label = "#weather_current"
+on_click = "popup:toggle"
+
+[[end.popup]]
+type = "box"
+orientation = "vertical"
+class = "popup-weather"
+
+[[end.popup.widgets]]
+type = "label"
+name = "header"
+label = "Forecast (Krasnoyarsk)"
+
+[[end.popup.widgets]]
+type = "box"
+orientation = "horizontal"
+class = "weather-row"
+
+[[end.popup.widgets.widgets]]
+type = "label"
+class = "weather-date"
+label = "#weather_date_0"
+width = 120
+
+[[end.popup.widgets.widgets]]
+type = "label"
+class = "weather-high"
+label = "H: #weather_high_0°"
+
+[[end.popup.widgets.widgets]]
+type = "label"
+class = "weather-avg"
+label = "A: #weather_avg_0°"
+
+[[end.popup.widgets.widgets]]
+type = "label"
+class = "weather-low"
+label = "L: #weather_low_0°"
+
+[[end.popup.widgets]]
+type = "box"
+orientation = "horizontal"
+class = "weather-row"
+
+[[end.popup.widgets.widgets]]
+type = "label"
+class = "weather-date"
+label = "#weather_date_1"
+width = 120
+
+[[end.popup.widgets.widgets]]
+type = "label"
+class = "weather-high"
+label = "H: #weather_high_1°"
+
+[[end.popup.widgets.widgets]]
+type = "label"
+class = "weather-avg"
+label = "A: #weather_avg_1°"
+
+[[end.popup.widgets.widgets]]
+type = "label"
+class = "weather-low"
+label = "L: #weather_low_1°"
+
+[[end.popup.widgets]]
+type = "box"
+orientation = "horizontal"
+class = "weather-row"
+
+[[end.popup.widgets.widgets]]
+type = "label"
+class = "weather-date"
+label = "#weather_date_2"
+width = 120
+
+[[end.popup.widgets.widgets]]
+type = "label"
+class = "weather-high"
+label = "H: #weather_high_2°"
+
+[[end.popup.widgets.widgets]]
+type = "label"
+class = "weather-avg"
+label = "A: #weather_avg_2°"
+
+[[end.popup.widgets.widgets]]
+type = "label"
+class = "weather-low"
+label = "L: #weather_low_2°"
+
+[[end]]
+type = "clock"
+format = "%H:%M"
+format_alt = "%A, %d %B %Y"
+
+[[end]]
+type = "custom"
+class = "power-menu"
+tooltip = "Up: {{30000:uptime -p | cut -d ' ' -f2-}}"
+
+[[end.bar]]
+type = "button"
+name = "power-btn"
+label = ""
+on_click = "popup:toggle"
+
+[[end.popup]]
+type = "box"
+orientation = "vertical"
+class = "popup-power-menu"
+
+[[end.popup.widgets]]
+type = "label"
+name = "header"
+label = "Power Menu"
+
+[[end.popup.widgets]]
+type = "box"
+orientation = "horizontal"
+
+[[end.popup.widgets.widgets]]
+type = "button"
+class = "power-btn"
+label = ""
+on_click = "!shutdown now"
+
+[[end.popup.widgets.widgets]]
+type = "button"
+class = "power-btn"
+label = ""
+on_click = "!reboot"
+
+[[end.popup.widgets]]
+type = "label"
+name = "uptime"
+label = "Uptime: {{30000:uptime -p | cut -d ' ' -f2-}}"
