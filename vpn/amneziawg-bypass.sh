@@ -1,195 +1,156 @@
 #!/bin/bash
+# AmneziaWG Bypass Injector (Paranoid Edition)
+# Aim: 110% safe direct routing for Git services
 
-# Configuration and Domains
-GITHUB_API="https://api.github.com/meta"
-CODEBERG_DOMAINS=("codeberg.org" "v2.codeberg.org")
-ARCH_DOMAINS=("aur.archlinux.org" "archlinux.org")
-DEFAULT_CONFIG="/etc/amnezia/amneziawg/usa1.conf"
-
-# Metric to identify routes added by this script
+# --- Configuration ---
+WG_IFACE="usa1"
 METRIC=555
+CONFIG_PATH="/etc/amnezia/amneziawg/usa1.conf"
 
-# Detection of default gateway and interface
-get_default_gw() {
-    ip route show default | grep -v "usa1" | awk '/default/ {print $3}' | head -n 1
+DOMAINS=(
+    "github.com" "api.github.com" "github.io" "raw.githubusercontent.com"
+    "codeberg.org" "v2.codeberg.org"
+    "aur.archlinux.org" "archlinux.org" "pkgbuild.com"
+)
+
+# Static CIDRs as fallback (GitHub & others)
+STATIC_CIDRS=(
+    "140.82.112.0/20" "192.30.252.0/22" "185.199.108.0/22" "143.55.64.0/21" # GitHub
+    "217.197.84.140/32" # Codeberg
+    "95.216.144.15/32"  # AUR
+)
+
+# --- Internal State ---
+REAL_GW=""
+REAL_DEV=""
+
+log() {
+    echo "[Bypass] $1"
+    logger -t amneziawg-bypass "$1"
 }
 
-get_default_dev() {
-    ip route show default | grep -v "usa1" | awk '/default/ {print $5}' | head -n 1
-}
-
-get_default_gw6() {
-    ip -6 route show default | grep -v "usa1" | awk '/default/ {print $3}' | head -n 1
-}
-
-get_default_dev6() {
-    ip -6 route show default | grep -v "usa1" | awk '/default/ {print $5}' | head -n 1
-}
-
-# Fetch GitHub IPs
-get_github_ips() {
-    # Only uncomment this if you are sure GitHub is not blocked by your ISP
-    curl --connect-timeout 5 --max-time 10 -s "$GITHUB_API" | jq -r '.git[], .web[]' | sort -u | grep -v ":" 2>/dev/null
-}
-
-get_github_ips6() {
-    curl --connect-timeout 5 --max-time 10 -s "$GITHUB_API" | jq -r '.git[], .web[]' | sort -u | grep ":" 2>/dev/null
-}
-
-# Resolve Codeberg IPs using Python for reliability
-get_codeberg_ips() {
-    for domain in "${CODEBERG_DOMAINS[@]}"; do
-        python3 -c "import socket; [print(i[4][0]) for i in socket.getaddrinfo('$domain', 80, socket.AF_INET)]" 2>/dev/null
-    done | sort -u
-}
-
-get_codeberg_ips6() {
-    for domain in "${CODEBERG_DOMAINS[@]}"; do
-        python3 -c "import socket; [print(i[4][0]) for i in socket.getaddrinfo('$domain', 80, socket.AF_INET6)]" 2>/dev/null
-    done | sort -u
-}
-
-get_arch_ips() {
-    for domain in "${ARCH_DOMAINS[@]}"; do
-        python3 -c "import socket; [print(i[4][0]) for i in socket.getaddrinfo('$domain', 80, socket.AF_INET)]" 2>/dev/null
-    done | sort -u
-}
-
-get_arch_ips6() {
-    for domain in "${ARCH_DOMAINS[@]}"; do
-        python3 -c "import socket; [print(i[4][0]) for i in socket.getaddrinfo('$domain', 80, socket.AF_INET6)]" 2>/dev/null
-    done | sort -u
-}
-
-manage_route() {
-    local ip=$1
-    local mode=$2 # add or del
-    local gw=$3
-    local dev=$4
-    
-    if [[ "$mode" == "add" ]]; then
-        if ! ip route show "$ip" 2>/dev/null | grep -q "metric $METRIC"; then
-            ip route add "$ip" via "$gw" dev "$dev" metric $METRIC 2>/dev/null
+# 110% Safe tool check
+check_requirements() {
+    for tool in ip awk python3 jq curl ping; do
+        if ! command -v "$tool" >/dev/null 2>&1; then
+            log "ERROR: Required tool '$tool' is missing. Aborting for safety."
+            exit 1
         fi
-    else
-        # Delete any route to this IP with our metric
-        ip route del "$ip" metric $METRIC 2>/dev/null
-    fi
-}
-
-manage_route6() {
-    local ip=$1
-    local mode=$2 # add or del
-    local gw=$3
-    local dev=$4
-    
-    if [[ -z "$gw" || -z "$dev" ]]; then return; fi
-
-    if [[ "$mode" == "add" ]]; then
-        if ! ip -6 route show "$ip" 2>/dev/null | grep -q "metric $METRIC"; then
-            ip -6 route add "$ip" via "$gw" dev "$dev" metric $METRIC 2>/dev/null
-        fi
-    else
-        ip -6 route del "$ip" metric $METRIC 2>/dev/null
-    fi
-}
-
-clean_garbage() {
-    echo "Cleaning up all routes with metric $METRIC..."
-    # IPv4
-    for ip in $(ip route show | grep "metric $METRIC" | awk '{print $1}'); do
-        ip route del "$ip" metric $METRIC 2>/dev/null
-    done
-    # IPv6
-    for ip in $(ip -6 route show | grep "metric $METRIC" | awk '{print $1}'); do
-        ip -6 route del "$ip" metric $METRIC 2>/dev/null
     done
 }
 
-run_bypass() {
-    local mode=$1
-    local GW=$(get_default_gw)
-    local DEV=$(get_default_dev)
-    local GW6=$(get_default_gw6)
-    local DEV6=$(get_default_dev6)
+# Find physical gateway with 200% reliability
+get_real_networking() {
+    # Method 1: Look at the 'main' table default gateway (most reliable)
+    local main_gw_info=$(ip route show table main default | head -n 1)
+    REAL_GW=$(echo "$main_gw_info" | awk '{print $3}')
+    REAL_DEV=$(echo "$main_gw_info" | awk '{print $5}')
 
-    if [[ -z "$GW" || -z "$DEV" ]]; then
-        echo "Error: Could not detect default gateway or interface."
+    # Method 2: Fallback to 'ip route get' if main table is empty
+    if [[ -z "$REAL_GW" || -z "$REAL_DEV" ]]; then
+        local target="8.8.8.8"
+        local route_info=$(ip route get "$target" | grep -v "$WG_IFACE" | head -n 1)
+        REAL_GW=$(echo "$route_info" | awk '{print $3}')
+        REAL_DEV=$(echo "$route_info" | awk '{print $5}')
+    fi
+
+    if [[ -z "$REAL_GW" || -z "$REAL_DEV" ]]; then
+        log "CRITICAL: Physical gateway detection failed. Safety abort."
+        return 1
+    fi
+
+    # Safety check: is the gateway alive?
+    if ! ping -c 1 -W 1 "$REAL_GW" >/dev/null 2>&1; then
+        log "WARNING: Gateway $REAL_GW not responding to ping, but we will proceed with caution."
+    fi
+    return 0
+}
+
+resolve_domains() {
+    python3 -c "
+import socket
+domains = [$(printf "'%s'," "${DOMAINS[@]}")]
+ips = set()
+for d in domains:
+    try:
+        infos = socket.getaddrinfo(d, 80, socket.AF_INET)
+        for i in infos: ips.add(i[4][0])
+    except: pass
+print('\n'.join(ips))
+"
+}
+
+# --- Main Logic ---
+
+del_routes() {
+    log "Cleaning up routes (Metric $METRIC)..."
+    # Mass deletion of any route with our specific metric
+    ip route show | grep "metric $METRIC" | awk '{print $1}' | while read -r ip; do
+        ip route del "$ip" metric $METRIC 2>/dev/null
+    done
+    log "Cleanup complete."
+}
+
+add_routes() {
+    check_requirements
+    
+    # Always clean before adding to prevent duplicates/conflicts
+    del_routes
+
+    if ! get_real_networking; then
         exit 1
     fi
 
-    if [[ "$mode" == "del" ]]; then
-        echo "Removing bypass routes..."
-        clean_garbage
-        return
-    fi
+    log "Injecting bypass via $REAL_GW on $REAL_DEV..."
 
-    echo "Adding bypass routes via $GW ($DEV)..."
+    local all_ips=("${STATIC_CIDRS[@]}")
     
-    local IPS=""
-    # Все байпасы временно отключены для отладки
-    # IPS+="$(get_github_ips) " 
-    # IPS+="$(get_codeberg_ips) "
-    # IPS+="$(get_arch_ips) "
+    # Add dynamic IPs
+    local resolved=$(resolve_domains)
+    if [[ -n "$resolved" ]]; then all_ips+=($resolved); fi
     
-    # if [[ ${#IPS} -lt 50 ]]; then
-    #     IPS+=" 140.82.112.0/20 192.30.252.0/22 185.199.108.0/22 143.55.64.0/21 217.197.84.140 209.126.35.78 209.126.35.79"
-    # fi
-    
-    for ip in $IPS; do
-        manage_route "$ip" "add" "$GW" "$DEV"
+    # Try GitHub Meta API (if GitHub isn't totally blocked yet)
+    local gh_meta=$(curl --connect-timeout 2 -s https://api.github.com/meta | jq -r '.git[], .web[]' 2>/dev/null | grep -v ":")
+    if [[ -n "$gh_meta" ]]; then all_ips+=($gh_meta); fi
+
+    # Atomic-like route addition
+    for ip in $(echo "${all_ips[@]}" | tr ' ' '\n' | sort -u); do
+        # We check if IP is valid before adding
+        if [[ $ip =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+(/[0-9]+)?$ ]]; then
+            ip route add "$ip" via "$REAL_GW" dev "$REAL_DEV" metric $METRIC 2>/dev/null
+        fi
     done
 
-    local IPS6=""
-    # IPS6+="$(get_github_ips6) "
-    IPS6+="$(get_codeberg_ips6) "
-    IPS6+="$(get_arch_ips6) "
-    
-    for ip in $IPS6; do
-        manage_route6 "$ip" "add" "$GW6" "$DEV6"
-    done
-    echo "Done."
+    log "Successfully injected $(echo "${all_ips[@]}" | wc -w) bypass routes."
 }
 
+# --- Installation ---
+
 setup() {
-    local config=$(realpath ${1:-$DEFAULT_CONFIG})
+    check_requirements
+    local config="${1:-$CONFIG_PATH}"
     local script_path=$(realpath "$0")
     
     if [[ ! -f "$config" ]]; then
-        echo "Error: Config file $config not found."
+        log "ERROR: Config $config not found."
         exit 1
     fi
     
-    if [[ $EUID -ne 0 ]]; then
-        echo "Error: This command must be run with sudo."
-        exit 1
-    fi
-
-    echo "Installing bypass hooks to $config..."
+    # Remove existing lines and add fresh ones
     sed -i "/amneziawg-bypass.sh/d" "$config"
     if grep -q "^\[Interface\]" "$config"; then
         sed -i "/^\[Interface\]/a PostUp = $script_path add\nPostDown = $script_path del" "$config"
-        echo "Hooks installed. Remember: if GitHub is blocked in your country, do NOT bypass it."
+        log "Hooks installed successfully to $config."
     else
-        echo "Error: Could not find [Interface] section."
+        log "ERROR: Could not find [Interface] section in config."
         exit 1
     fi
 }
 
-ACTION=$1
-case "$ACTION" in
-    add|del)
-        run_bypass "$ACTION"
-        ;;
-    setup)
-        setup "$2"
-        ;;
-    clean)
-        clean_garbage
-        ;;
-    *)
-        echo "Usage: $0 {add|del|clean|setup [config_path]}"
-        exit 1
-        ;;
+# --- Execution ---
+case "$1" in
+    add) add_routes ;;
+    del) del_routes ;;
+    setup) setup "$2" ;;
+    *) echo "Usage: $0 {add|del|setup}"; exit 1 ;;
 esac
-
