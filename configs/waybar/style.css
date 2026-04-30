@@ -15,109 +15,78 @@
 * {
     border: none;
     font-family: "JetBrainsMono Nerd Font", monospace;
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 600;
-    /* Полужирный для читаемости */
 }
 
 window#waybar {
     background-color: @bg;
     color: @fg;
     border-bottom: 2px solid @dark_grey;
-    /* Линия снизу */
+    transition-property: background-color;
+    transition-duration: .5s;
 }
 
-/* -- Workspaces -- */
+/* -- Niri Workspaces -- */
+#workspaces {
+    margin: 4px 8px;
+    padding: 0 5px;
+    background-color: @dark_grey;
+    border-radius: 8px;
+}
+
 #workspaces button {
     padding: 0 8px;
-    color: @grey;
-    border-radius: 0;
+    color: @fg;
+    font-size: 16px;
+}
+
+#workspaces button.focused {
+    color: @blue;
 }
 
 #workspaces button.active {
-    color: @blue;
-    background-color: @dark_grey;
-    border-bottom: 2px solid @blue;
+    color: @fg;
 }
 
 #workspaces button:hover {
-    background-color: @dark_grey;
-    color: @fg;
+    background-color: @grey;
+    box-shadow: none;
 }
 
-/* -- Modules Right -- */
-/* Добавляем разделитель " | " между модулями как в твоем скрипте */
-.modules-right>widget>label {
+/* -- Window Title -- */
+#window {
+    color: @fg;
+    padding: 0 15px;
+    font-style: italic;
+}
+
+/* -- Modules -- */
+.modules-right > widget > label,
+.modules-right > widget > box {
     padding: 0 10px;
-    margin: 0;
+    margin: 4px 2px;
+    border-radius: 6px;
 }
 
-/* Общий цвет для всех модулей */
-#custom-gpu,
-#cpu,
-#memory,
-#disk,
-#network,
-#custom-wifitemp,
-#battery,
-#language,
-#clock {
-    color: @fg;
+#cpu, #memory, #disk, #pulseaudio, #battery, #language, #network, #custom-wifitemp, #clock, #tray, #custom-power {
+    padding: 0 12px;
     background-color: @bg;
-    padding: 0 8px;
     border-left: 1px solid @dark_grey;
-    /* Разделитель */
 }
 
-/* -- Цветовые акценты (опционально, для значений) -- */
+#cpu { color: @blue; }
+#memory { color: @cyan; }
+#disk { color: @yellow; }
+#pulseaudio { color: @magenta; }
+#language { color: @magenta; font-weight: 800; }
+#network { color: @green; }
+#custom-wifitemp { color: @green; font-size: 12px; }
+#clock { color: @blue; border-left: none; }
+#custom-power { color: @red; padding-right: 15px; }
 
-/* Раскладка */
-#language {
-    color: @magenta;
-    padding-left: 15px;
-}
-
-/* GPU / CPU */
-#custom-gpu {
-    color: @blue;
-}
-
-#cpu {
-    color: @blue;
-}
-
-/* RAM */
-#memory {
-    color: @cyan;
-}
-
-/* Disk */
-#disk {
-    color: @yellow;
-}
-
-/* Network */
-#network {
-    color: @green;
-}
-
-#custom-wifitemp {
-    color: @green;
-}
-
-/* Battery */
-#battery {
-    color: @fg;
-}
-
-#battery.charging {
-    color: @green;
-}
-
-#battery.warning:not(.charging) {
-    color: @yellow;
-}
-
+#battery.charging { color: @green; }
+#battery.warning:not(.charging) { color: @yellow; }
 #battery.critical:not(.charging) {
     color: @red;
     animation-name: blink;
@@ -126,17 +95,18 @@ window#waybar {
     animation-direction: alternate;
 }
 
-/* Clock */
-#clock {
-    color: @blue;
-    background-color: @bg;
-    border-left: none;
-    /* У часов слева не нужен бордер, если они по центру */
-}
-
 @keyframes blink {
     to {
         background-color: @red;
         color: @bg;
     }
+}
+
+#tray {
+    padding: 0 10px;
+}
+
+#tray menu {
+    background-color: @bg;
+    color: @fg;
 }

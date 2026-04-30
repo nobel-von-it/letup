@@ -2,9 +2,9 @@
     "layer": "top",
     "position": "top",
     "height": 34,
-    "spacing": 0,
+    "spacing": 4,
 
-    "modules-left": ["niri/workspaces"],
+    "modules-left": ["niri/workspaces", "niri/window"],
     "modules-center": ["clock"],
     "modules-right": [
         "niri/language",
@@ -14,36 +14,42 @@
         "group/connection",
         "pulseaudio",
         "battery",
-        "tray",
         "custom/power"
     ],
 
     "niri/workspaces": {
         "format": "{icon}",
         "format-icons": {
-            "1-main": "main",
-            "2-work": "code",
-            "3-chat": "chat",
-            "4-sys": "sys",
-            "default": "●"
+            "1-main": "󰈹",
+            "2-work": "󰅱",
+            "3-chat": "󰙯",
+            "4-sys": "󰓓",
+            "default": "󰄰"
         }
     },
 
+    "niri/window": {
+        "format": "{title}",
+        "max-length": 50,
+        "separate-outputs": true
+    },
+
     "niri/language": {
-        "format": "{}",
-        "format-en": "US",
-        "format-ru": "RU"
+        "format": "󰌌 {}"
     },
 
     "tray": {
         "icon-size": 18,
-        "spacing": 8
+        "spacing": 10
     },
 
     "pulseaudio": {
-        "format": "V {volume}%",
-        "format-muted": "V MUT",
-        "format-bluetooth": "V {volume}% ",
+        "format": "{icon} {volume}%",
+        "format-muted": "󰝟 MUT",
+        "format-bluetooth": "󰕾 {volume}% ",
+        "format-icons": {
+            "default": ["󰕿", "󰖀", "󰕾"]
+        },
         "scroll-step": 5,
         "on-click": "pactl set-sink-mute @DEFAULT_SINK@ toggle",
         "on-click-right": "pavucontrol",
@@ -52,20 +58,19 @@
 
     "cpu": {
         "interval": 2,
-        "format": "CPU {usage}% {icon}",
-        "format-icons": ["", "!!"],
+        "format": "󰻠 {usage}%",
         "tooltip": true
     },
 
     "memory": {
         "interval": 5,
-        "format": "RAM {percentage}%",
+        "format": "󰍛 {percentage}%",
         "tooltip-format": "Used: {used}GiB / Total: {total}GiB"
     },
 
     "disk": {
         "interval": 30,
-        "format": "D {specific_used:0.1f}G",
+        "format": "󰋊 {specific_used:0.1f}G",
         "unit": "GB",
         "path": "/"
     },
@@ -77,17 +82,17 @@
 
     "network": {
         "interval": 2,
-        "format-wifi": "{bandwidthDownBytes} / {bandwidthUpBytes}",
-        "format-ethernet": "{bandwidthDownBytes} / {bandwidthUpBytes}",
-        "format-disconnected": "OFF",
-        "tooltip-format": "{ifname}: {ipaddr}",
-        "min-length": 12
+        "format-wifi": "󰖩 {bandwidthDownBytes}",
+        "format-ethernet": "󰈀 {bandwidthDownBytes}",
+        "format-disconnected": "󰖪 OFF",
+        "tooltip-format": "{ifname}: {ipaddr}\n󰇚 {bandwidthDownBytes} 󰕒 {bandwidthUpBytes}",
+        "min-length": 8
     },
 
     "custom/wifitemp": {
         "interval": 5,
         "exec": "for tz in /sys/class/thermal/thermal_zone*; do if grep -q 'iwlwifi' \"$tz/type\"; then awk '{printf \"%.0f°C\", $1/1000}' \"$tz/temp\"; break; fi; done",
-        "format": "WiFi {}"
+        "format": "󰔄 {}"
     },
 
     "battery": {
@@ -96,20 +101,20 @@
             "warning": 30,
             "critical": 15
         },
-        "format": "Bat {capacity}% {icon} {power:0.1f}W",
-        "format-charging": "Bat {capacity}%  {power:0.1f}W",
-        "format-plugged": "Bat {capacity}% ",
-        "format-icons": ["Dis", "Dis", "Dis", "Dis", "Dis"]
+        "format": "{icon} {capacity}%",
+        "format-charging": "󰂄 {capacity}%",
+        "format-plugged": "󰚥 {capacity}%",
+        "format-icons": ["󰁺", "󰁼", "󰁾", "󰂀", "󰁹"]
     },
 
     "clock": {
-        "format": "{:%H:%M  %F}",
+        "format": "󰃰 {:%H:%M  %F}",
         "tooltip-format": "<tt>{calendar}</tt>"
     },
 
     "custom/power": {
-        "format": "☰",
+        "format": "",
         "tooltip": false,
         "on-click": "~/.config/niri/scripts/power-menu.sh"
-    },
+    }
 }
