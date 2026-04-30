@@ -9,6 +9,8 @@ source $ZSH/oh-my-zsh.sh
 export EDITOR='nvim'
 export PATH="$HOME/.local/bin:$HOME/.cargo/bin:$PATH"
 export LOCAL_HOST="127.0.0.1:3000"
+export GTK_THEME="Adwaita-dark"
+export QT_QPA_PLATFORMTHEME="gtk3"
 
 function yy() {
 	local tmp="$(mktemp -t "yazi-cwd.XXXXXX")"
