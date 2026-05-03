@@ -79,7 +79,17 @@ EOF
 
 format_and_mount() {
     echo "--- Formatting and Mounting ---"
+    
+    # Wait for partitions to be recognized
+    echo "Waiting for kernel to re-read partition table..."
+    udevadm settle
+    sleep 2
+
+    # Wipe old signatures to avoid mount confusion
+    wipefs -a "$PART_ROOT" || true
+    
     if [ "$IS_EFI" = true ]; then
+        wipefs -a "$PART_BOOT" || true
         mkfs.fat -F32 "$PART_BOOT"
         mkfs.btrfs -f "$PART_ROOT"
         mount "$PART_ROOT" /mnt
