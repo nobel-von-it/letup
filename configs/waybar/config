@@ -3,9 +3,15 @@
     "position": "top",
     "height": 34,
     "spacing": 4,
-
-    "modules-left": ["custom/launcher", "niri/workspaces", "niri/window"],
-    "modules-center": ["clock"],
+    "modules-left": [
+        "custom/launcher",
+        "niri/workspaces",
+        "niri/window"
+    ],
+    "modules-center": [
+        "clock",
+        "custom/weather"
+    ],
     "modules-right": [
         "niri/language",
         "cpu",
@@ -17,13 +23,11 @@
         "tray",
         "custom/power"
     ],
-
     "custom/launcher": {
         "format": "󰣇",
         "on-click": "fuzzel",
         "tooltip": false
     },
-
     "niri/workspaces": {
         "format": "{icon}",
         "format-icons": {
@@ -34,59 +38,65 @@
             "default": "󰄰"
         }
     },
-
     "niri/window": {
         "format": "{title}",
         "max-length": 50,
         "separate-outputs": true
     },
-
     "niri/language": {
         "format": "󰌌 {}"
     },
-
+    "custom/weather": {
+        "format": "{}",
+        "tooltip": true,
+        "interval": 3600,
+        "exec": "~/.config/waybar/scripts/weather.py",
+        "return-type": "json",
+        "on-click": "alacritty --title 'Weather Forecast' -e bash -c 'curl -s \"wttr.in/Krasnoyarsk?m\"; echo; echo \"Press any key to close...\"; read -n 1 -s'"
+    },
     "tray": {
         "icon-size": 18,
         "spacing": 10
     },
-
     "pulseaudio": {
         "format": "{icon} {volume}%",
         "format-muted": "󰝟 MUT",
         "format-bluetooth": "󰕾 {volume}% ",
         "format-icons": {
-            "default": ["󰕿", "󰖀", "󰕾"]
+            "default": [
+                "󰕿",
+                "󰖀",
+                "󰕾"
+            ]
         },
         "scroll-step": 5,
         "on-click": "pactl set-sink-mute @DEFAULT_SINK@ toggle",
         "on-click-right": "pavucontrol",
         "tooltip": false
     },
-
     "cpu": {
         "interval": 2,
         "format": "󰻠 {usage}%",
         "tooltip": true
     },
-
     "memory": {
         "interval": 5,
         "format": "󰍛 {percentage}%",
         "tooltip-format": "Used: {used}GiB / Total: {total}GiB"
     },
-
     "disk": {
         "interval": 30,
         "format": "󰋊 {specific_used:0.1f}G",
         "unit": "GB",
         "path": "/"
     },
-
     "group/connection": {
         "orientation": "horizontal",
-        "modules": ["network", "custom/wifitemp"]
+        "modules": [
+            "network",
+            "custom/wifitemp"
+        ]
     },
-
     "network": {
         "interval": 2,
         "format-wifi": "󰖩 {bandwidthDownBytes}",
@@ -95,13 +105,11 @@
         "tooltip-format": "{ifname}: {ipaddr}\n󰇚 {bandwidthDownBytes} 󰕒 {bandwidthUpBytes}",
         "min-length": 8
     },
-
     "custom/wifitemp": {
         "interval": 5,
         "exec": "for tz in /sys/class/thermal/thermal_zone*; do if grep -q 'iwlwifi' \"$tz/type\"; then awk '{printf \"%.0f°C\", $1/1000}' \"$tz/temp\"; break; fi; done",
         "format": "󰔄 {}"
     },
-
     "battery": {
         "interval": 5,
         "states": {
@@ -111,14 +119,18 @@
         "format": "{icon} {capacity}%",
         "format-charging": "󰂄 {capacity}%",
         "format-plugged": "󰚥 {capacity}%",
-        "format-icons": ["󰁺", "󰁼", "󰁾", "󰂀", "󰁹"]
+        "format-icons": [
+            "󰁺",
+            "󰁼",
+            "󰁾",
+            "󰂀",
+            "󰁹"
+        ]
     },
-
     "clock": {
         "format": "󰃰 {:%H:%M  %F}",
         "tooltip-format": "<tt>{calendar}</tt>"
     },
-
     "custom/power": {
         "format": "",
         "tooltip": false,

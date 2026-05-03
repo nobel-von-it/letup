@@ -69,12 +69,13 @@ window#waybar {
     border-radius: 6px;
 }
 
-#cpu, #memory, #disk, #pulseaudio, #battery, #language, #network, #custom-wifitemp, #clock, #tray, #custom-power {
+#cpu, #memory, #disk, #pulseaudio, #battery, #language, #network, #custom-wifitemp, #clock, #tray, #custom-power, #custom-weather {
     padding: 0 12px;
     background-color: @bg;
     border-left: 1px solid @dark_grey;
 }
 
+#custom-weather { color: @cyan; }
 #cpu { color: @blue; }
 #memory { color: @cyan; }
 #disk { color: @yellow; }
