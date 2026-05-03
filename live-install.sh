@@ -44,8 +44,8 @@ echo "--- Arch Linux Live CD Installer ---"
 
 optimize_pacman() {
     echo "--- Optimizing Pacman for Live CD ---"
-    # Enable parallel downloads
-    sed -i 's/^#ParallelDownloads = 5/ParallelDownloads = 10/' /etc/pacman.conf
+    # Force enable parallel downloads with 10 threads
+    sed -i 's/^#\?ParallelDownloads.*/ParallelDownloads = 10/' /etc/pacman.conf
     
     # Set Russian mirrors (only for Live CD environment)
     if [ "$SKIP_MIRRORS" = false ]; then
@@ -125,7 +125,7 @@ echo "LANG=en_US.UTF-8" > /etc/locale.conf
 echo "$HOSTNAME" > /etc/hostname
 
 echo "Optimizing Pacman in target system..."
-sed -i 's/^#ParallelDownloads = 5/ParallelDownloads = 10/' /etc/pacman.conf
+sed -i 's/^#\?ParallelDownloads.*/ParallelDownloads = 10/' /etc/pacman.conf
 # Mirrorlist is NOT touched here as requested.
 
 echo "Setting up network..."
