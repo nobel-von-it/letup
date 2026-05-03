@@ -3,9 +3,19 @@
 # --- Configuration ---
 DISK="/dev/nvme0n1"
 HOSTNAME="arch-niri"
-USERNAME="username" # Change this or it will be prompted
+USERNAME="username"
 TIMEZONE="Europe/Moscow"
 LOCALE="en_US.UTF-8"
+
+# Detect partition naming (p1 for nvme/loop/mmcblk, 1 for sdX/vdX)
+if [[ $DISK == *nvme* || $DISK == *mmcblk* || $DISK == *loop* ]]; then
+    P_SUFFIX="p"
+else
+    P_SUFFIX=""
+fi
+
+PART_BOOT="${DISK}${P_SUFFIX}1"
+PART_ROOT="${DISK}${P_SUFFIX}2"
 
 set -e # Exit on error
 
@@ -16,27 +26,23 @@ echo "--- Arch Linux Live CD Installer ---"
 setup_partitions() {
     echo "--- Partitioning $DISK ---"
     # Create a 1GB EFI partition and use the rest for Root
-    # 2048 is the start sector for alignment
-    # +1G is the size of the first partition
-    # type 1 is EFI
-    # type 20 is Linux Root (x86-64)
     sfdisk "$DISK" <<EOF
 label: gpt
 device: $DISK
 unit: sectors
 
-$DISK-p1 : start=2048, size=2097152, type=C12A7328-F81F-11D2-BA4B-00A0C93EC93B
-$DISK-p2 : start=2099200, type=4F68BCE3-E8CD-4DB1-96E7-FBCAF984B709
+1 : start=2048, size=2097152, type=C12A7328-F81F-11D2-BA4B-00A0C93EC93B
+2 : start=2099200, type=4F68BCE3-E8CD-4DB1-96E7-FBCAF984B709
 EOF
 }
 
 format_and_mount() {
     echo "--- Formatting and Mounting ---"
-    mkfs.fat -F32 "${DISK}p1"
-    mkfs.btrfs -f "${DISK}p2"
+    mkfs.fat -F32 "$PART_BOOT"
+    mkfs.btrfs -f "$PART_ROOT"
     
-    mount "${DISK}p2" /mnt
-    mount --mkdir "${DISK}p1" /mnt/boot
+    mount "$PART_ROOT" /mnt
+    mount --mkdir "$PART_BOOT" /mnt/boot
 }
 
 install_base() {
@@ -85,7 +91,7 @@ title   Arch Linux
 linux   /vmlinuz-linux
 initrd  /amd-ucode.img
 initrd  /initramfs-linux.img
-options root=${DISK}p2 rw rootfstype=btrfs nvidia_drm.modeset=1 nvidia_drm.fbdev=1
+options root=$PART_ROOT rw rootfstype=btrfs nvidia_drm.modeset=1 nvidia_drm.fbdev=1
 EOT
 
 echo "default arch.conf" > /boot/loader/loader.conf
