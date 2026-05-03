@@ -26,11 +26,13 @@ fi
 # Parse flags
 MIN_INSTALL=false
 CONFIRM=false
+SKIP_MIRRORS=false
 
 for arg in "$@"; do
     case $arg in
         --min) MIN_INSTALL=true ;;
         --confirm) CONFIRM=true ;;
+        --mskip) SKIP_MIRRORS=true ;;
     esac
 done
 
@@ -46,9 +48,13 @@ optimize_pacman() {
     sed -i 's/^#ParallelDownloads = 5/ParallelDownloads = 10/' /etc/pacman.conf
     
     # Set Russian mirrors (only for Live CD environment)
-    if command -v reflector >/dev/null 2>&1; then
-        echo "Updating mirrorlist (Russia)..."
-        reflector --country Russia --latest 10 --sort rate --save /etc/pacman.d/mirrorlist
+    if [ "$SKIP_MIRRORS" = false ]; then
+        if command -v reflector >/dev/null 2>&1; then
+            echo "Updating mirrorlist (Russia)..."
+            reflector --country Russia --latest 10 --sort rate --save /etc/pacman.d/mirrorlist
+        fi
+    else
+        echo "Skipping mirrorlist update as requested."
     fi
 }
 
@@ -205,7 +211,7 @@ EOF
 
 if [ "$CONFIRM" = false ]; then
     echo "WARNING: This will WIPE $DISK."
-    echo "Usage: $0 --confirm [--min]"
+    echo "Usage: $0 --confirm [--min] [--mskip]"
     exit 1
 fi
 
