@@ -17,6 +17,12 @@ fi
 PART_BOOT="${DISK}${P_SUFFIX}1"
 PART_ROOT="${DISK}${P_SUFFIX}2"
 
+# Detect UEFI/BIOS
+IS_EFI=false
+if [ -d /sys/firmware/efi ]; then
+    IS_EFI=true
+fi
+
 # Parse flags
 MIN_INSTALL=false
 CONFIRM=false
@@ -48,32 +54,43 @@ optimize_pacman() {
 
 setup_partitions() {
     echo "--- Partitioning $DISK ---"
-    # Create a 1GB EFI partition and use the rest for Root
-    sfdisk "$DISK" <<EOF
+    if [ "$IS_EFI" = true ]; then
+        # UEFI: EFI (1G) + Root
+        sfdisk "$DISK" <<EOF
 label: gpt
-device: $DISK
-unit: sectors
-
 1 : start=2048, size=2097152, type=C12A7328-F81F-11D2-BA4B-00A0C93EC93B
 2 : start=2099200, type=4F68BCE3-E8CD-4DB1-96E7-FBCAF984B709
 EOF
+    else
+        # BIOS: BIOS Boot (1M) + Root
+        sfdisk "$DISK" <<EOF
+label: gpt
+1 : start=2048, size=2048, type=21686148-6449-6E6F-744E-656564454649
+2 : start=4096, type=4F68BCE3-E8CD-4DB1-96E7-FBCAF984B709
+EOF
+    fi
 }
 
 format_and_mount() {
     echo "--- Formatting and Mounting ---"
-    mkfs.fat -F32 "$PART_BOOT"
-    mkfs.btrfs -f "$PART_ROOT"
-    
-    mount "$PART_ROOT" /mnt
-    mount --mkdir "$PART_BOOT" /mnt/boot
+    if [ "$IS_EFI" = true ]; then
+        mkfs.fat -F32 "$PART_BOOT"
+        mount "$PART_ROOT" /mnt
+        mount --mkdir "$PART_BOOT" /mnt/boot
+    else
+        # In BIOS mode, PART_BOOT is the BIOS Boot partition (no FS needed)
+        # We only format Root
+        mkfs.btrfs -f "$PART_ROOT"
+        mount "$PART_ROOT" /mnt
+    fi
 }
 
 install_base() {
     echo "--- Pacstrap (Base System) ---"
-    PACKAGES="base linux linux-headers linux-firmware base-devel neovim git networkmanager btrfs-progs"
+    PACKAGES="base linux linux-headers base-devel neovim git networkmanager btrfs-progs"
     
     if [ "$MIN_INSTALL" = false ]; then
-        PACKAGES="$PACKAGES amd-ucode"
+        PACKAGES="$PACKAGES linux-firmware amd-ucode"
     fi
 
     pacstrap -K /mnt $PACKAGES
@@ -114,16 +131,17 @@ echo "Set password for $USERNAME:"
 passwd "$USERNAME"
 sed -i 's/^# %wheel ALL=(ALL:ALL) ALL/%wheel ALL=(ALL:ALL) ALL/' /etc/sudoers
 
-echo "Installing Bootloader (systemd-boot)..."
-bootctl install
+if [ "$IS_EFI" = true ]; then
+    echo "Installing Bootloader (systemd-boot)..."
+    bootctl install
 
-echo "Configuring systemd-boot entry..."
-OPTIONS="root=$PART_ROOT rw rootfstype=btrfs"
-if [ "$MIN_INSTALL" = false ]; then
-    OPTIONS="$OPTIONS nvidia_drm.modeset=1 nvidia_drm.fbdev=1"
-fi
+    echo "Configuring systemd-boot entry..."
+    OPTIONS="root=$PART_ROOT rw rootfstype=btrfs"
+    if [ "$MIN_INSTALL" = false ]; then
+        OPTIONS="$OPTIONS nvidia_drm.modeset=1 nvidia_drm.fbdev=1"
+    fi
 
-cat <<EOT > /boot/loader/entries/arch.conf
+    cat <<EOT > /boot/loader/entries/arch.conf
 title   Arch Linux
 linux   /vmlinuz-linux
 $( [ "$MIN_INSTALL" = false ] && echo "initrd  /amd-ucode.img" )
@@ -131,8 +149,20 @@ initrd  /initramfs-linux.img
 options $OPTIONS
 EOT
 
-echo "default arch.conf" > /boot/loader/loader.conf
-echo "timeout 3" >> /boot/loader/loader.conf
+    echo "default arch.conf" > /boot/loader/loader.conf
+    echo "timeout 3" >> /boot/loader/loader.conf
+else
+    echo "Installing Bootloader (GRUB for BIOS)..."
+    pacman -S --noconfirm grub
+    grub-install --target=i386-pc "$DISK"
+    
+    # Configure GRUB
+    OPTIONS="nvidia_drm.modeset=1 nvidia_drm.fbdev=1"
+    if [ "$MIN_INSTALL" = true ]; then OPTIONS=""; fi
+    
+    sed -i "s|GRUB_CMDLINE_LINUX_DEFAULT=.*|GRUB_CMDLINE_LINUX_DEFAULT=\"quiet rw rootfstype=btrfs $OPTIONS\"|" /etc/default/grub
+    grub-mkconfig -o /boot/grub/grub.cfg
+fi
 
 if [ "$MIN_INSTALL" = false ]; then
     echo "Installing NVIDIA and Desktop components..."
