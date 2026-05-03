@@ -17,11 +17,34 @@ fi
 PART_BOOT="${DISK}${P_SUFFIX}1"
 PART_ROOT="${DISK}${P_SUFFIX}2"
 
+# Parse flags
+MIN_INSTALL=false
+CONFIRM=false
+
+for arg in "$@"; do
+    case $arg in
+        --min) MIN_INSTALL=true ;;
+        --confirm) CONFIRM=true ;;
+    esac
+done
+
 set -e # Exit on error
 
 echo "--- Arch Linux Live CD Installer ---"
 
 # --- Functions ---
+
+optimize_pacman() {
+    echo "--- Optimizing Pacman for Live CD ---"
+    # Enable parallel downloads
+    sed -i 's/^#ParallelDownloads = 5/ParallelDownloads = 10/' /etc/pacman.conf
+    
+    # Set Russian mirrors (only for Live CD environment)
+    if command -v reflector >/dev/null 2>&1; then
+        echo "Updating mirrorlist (Russia)..."
+        reflector --country Russia --latest 10 --sort rate --save /etc/pacman.d/mirrorlist
+    fi
+}
 
 setup_partitions() {
     echo "--- Partitioning $DISK ---"
@@ -46,9 +69,14 @@ format_and_mount() {
 }
 
 install_base() {
-    echo "--- Pacstrap (Base System + Drivers) ---"
-    # Essential packages + user requested
-    pacstrap -K /mnt base linux linux-headers linux-firmware amd-ucode base-devel neovim git networkmanager btrfs-progs
+    echo "--- Pacstrap (Base System) ---"
+    PACKAGES="base linux linux-headers linux-firmware base-devel neovim git networkmanager btrfs-progs"
+    
+    if [ "$MIN_INSTALL" = false ]; then
+        PACKAGES="$PACKAGES amd-ucode"
+    fi
+
+    pacstrap -K /mnt $PACKAGES
 }
 
 generate_fstab() {
@@ -73,6 +101,10 @@ locale-gen
 echo "LANG=en_US.UTF-8" > /etc/locale.conf
 echo "$HOSTNAME" > /etc/hostname
 
+echo "Optimizing Pacman in target system..."
+sed -i 's/^#ParallelDownloads = 5/ParallelDownloads = 10/' /etc/pacman.conf
+# Mirrorlist is NOT touched here as requested.
+
 echo "Setting up network..."
 systemctl enable NetworkManager
 
@@ -86,35 +118,41 @@ echo "Installing Bootloader (systemd-boot)..."
 bootctl install
 
 echo "Configuring systemd-boot entry..."
+OPTIONS="root=$PART_ROOT rw rootfstype=btrfs"
+if [ "$MIN_INSTALL" = false ]; then
+    OPTIONS="$OPTIONS nvidia_drm.modeset=1 nvidia_drm.fbdev=1"
+fi
+
 cat <<EOT > /boot/loader/entries/arch.conf
 title   Arch Linux
 linux   /vmlinuz-linux
-initrd  /amd-ucode.img
+$( [ "$MIN_INSTALL" = false ] && echo "initrd  /amd-ucode.img" )
 initrd  /initramfs-linux.img
-options root=$PART_ROOT rw rootfstype=btrfs nvidia_drm.modeset=1 nvidia_drm.fbdev=1
+options $OPTIONS
 EOT
 
 echo "default arch.conf" > /boot/loader/loader.conf
 echo "timeout 3" >> /boot/loader/loader.conf
 
-echo "Installing NVIDIA and Desktop components..."
-pacman -S --noconfirm nvidia-dkms nvidia-utils egl-wayland \
-    niri xdg-desktop-portal-gnome polkit-gnome qt5-wayland qt6-wayland \
-    alacritty waybar fuzzel mako swaybg greetd tuigreet \
-    nwg-look kvantum
+if [ "$MIN_INSTALL" = false ]; then
+    echo "Installing NVIDIA and Desktop components..."
+    pacman -S --noconfirm nvidia-dkms nvidia-utils egl-wayland \
+        niri xdg-desktop-portal-gnome polkit-gnome qt5-wayland qt6-wayland \
+        alacritty waybar fuzzel mako swaybg greetd greetd-tuigreet \
+        nwg-look kvantum
 
-echo "Configuring NVIDIA Early KMS..."
-sed -i 's/^MODULES=()/MODULES=(nvidia nvidia_modeset nvidia_uvm nvidia_drm)/' /etc/mkinitcpio.conf
-# Remove kms hook if present
-sed -i 's/ kms / /' /etc/mkinitcpio.conf
-mkinitcpio -P
+    echo "Configuring NVIDIA Early KMS..."
+    sed -i 's/^MODULES=()/MODULES=(nvidia nvidia_modeset nvidia_uvm nvidia_drm)/' /etc/mkinitcpio.conf
+    # Remove kms hook if present
+    sed -i 's/ kms / /' /etc/mkinitcpio.conf
+    mkinitcpio -P
 
-echo "Enabling NVIDIA power management services..."
-systemctl enable nvidia-suspend.service nvidia-hibernate.service nvidia-resume.service
+    echo "Enabling NVIDIA power management services..."
+    systemctl enable nvidia-suspend.service nvidia-hibernate.service nvidia-resume.service
 
-echo "Configuring greetd with tuigreet..."
-mkdir -p /etc/greetd
-cat <<EOT > /etc/greetd/config.toml
+    echo "Configuring greetd with tuigreet..."
+    mkdir -p /etc/greetd
+    cat <<EOT > /etc/greetd/config.toml
 [terminal]
 vt = 1
 
@@ -122,6 +160,8 @@ vt = 1
 command = "tuigreet --time --remember --cmd niri-session"
 user = "greeter"
 EOT
+    systemctl enable greetd
+fi
 
 echo "Done inside chroot!"
 EOF
@@ -133,12 +173,13 @@ EOF
 
 # --- Main Execution ---
 
-if [[ $1 != "--confirm" ]]; then
+if [ "$CONFIRM" = false ]; then
     echo "WARNING: This will WIPE $DISK."
-    echo "Run with --confirm to proceed."
+    echo "Usage: $0 --confirm [--min]"
     exit 1
 fi
 
+optimize_pacman
 setup_partitions
 format_and_mount
 install_base
