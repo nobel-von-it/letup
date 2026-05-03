@@ -81,6 +81,7 @@ format_and_mount() {
     echo "--- Formatting and Mounting ---"
     if [ "$IS_EFI" = true ]; then
         mkfs.fat -F32 "$PART_BOOT"
+        mkfs.btrfs -f "$PART_ROOT"
         mount "$PART_ROOT" /mnt
         mount --mkdir "$PART_BOOT" /mnt/boot
     else
