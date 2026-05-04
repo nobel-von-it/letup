@@ -173,7 +173,6 @@ class Installer:
         # 2. Component Selection
         component_choices = []
         for group in self.config["groups"]:
-            component_choices.append(inquirer.Separator(f"=== {group['name']} ==="))
             for item in group["items"]:
                 component_choices.append((item["name"], item))
 

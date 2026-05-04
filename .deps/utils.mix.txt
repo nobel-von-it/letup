@@ -8,5 +8,4 @@ less
 jq
 wget
 curl
-
-rok (https://codeberg.org/nimirus/rok.git)
+eza
