@@ -23,7 +23,7 @@ output "eDP-1" {
 }
 
 output "HDMI-A-1" {
-    mode "2560x1440@100.000"
+    mode "1920x1080@99.999"
 }
 
 environment {
@@ -75,7 +75,9 @@ spawn-at-startup "waybar"
 spawn-at-startup "mako"
 spawn-at-startup "xwayland-satellite"
 spawn-at-startup "/usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1"
-// spawn-at-startup "swww-daemon"
+
+spawn-at-startup "awww-daemon"
+spawn-at-startup "awww img /home/nimirus/Downloads/2b-city-ruins-nier-automata-moewalls-com.jpg"
 // spawn-at-startup "fcitx5" "-d"
 // spawn-at-startup "blueman-applet"
 // spawn-at-startup "lxqt-policykit-agent"
