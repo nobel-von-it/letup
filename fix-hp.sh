@@ -1,17 +1,14 @@
 #!/bin/bash
 
-# Проверка на запуск от root (sudo)
 if [ "$EUID" -ne 0 ]; then
   echo "Пожалуйста, запустите скрипт с правами суперпользователя: sudo bash $0"
   exit 1
 fi
 
 echo "=== Этап 1: Радикальная чистка очередей ==="
-# 1. Жестко отменяем все текущие задания во всех принтерах
 echo "Отменяю зависшие задания печати..."
 cancel -a
 
-# 2. Ищем и удаляем все профили принтеров, в названии которых есть 2055
 echo "Ищу старые настройки HP P2055dn..."
 PRINTERS=$(lpstat -p | grep -i "2055" | awk '{print $2}')
 
@@ -24,12 +21,21 @@ else
     done
 fi
 
-echo "=== Этап 2: Установка правильных драйверов HPLIP ==="
-# Обновляем списки пакетов и ставим официальный софт HP
-apt update
-apt install -y hplip hplip-gui printer-driver-hpcups
+echo "=== Этап 2: Установка драйверов и CUPS ==="
+if command -v pacman >/dev/null 2>&1; then
+    echo "Использую pacman для установки..."
+    pacman -Sy --needed --noconfirm hplip cups
+elif command -v apt >/dev/null 2>&1; then
+    echo "Использую apt для установки..."
+    apt update
+    apt install -y hplip hplip-gui printer-driver-hpcups cups
+else
+    echo "Ошибка: Не найден подходящий менеджер пакетов (pacman или apt)."
+    exit 1
+fi
 
 echo "=== Этап 3: Перезапуск системы печати ==="
+systemctl enable --now cups
 systemctl restart cups
 
 echo "=========================================================="
