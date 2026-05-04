@@ -1,0 +1,200 @@
+{
+  "profiles": [
+    {
+      "name": "Base PC (Ryzen 5 5600 + RTX 3060)",
+      "id": "base-pc",
+      "deps": [
+        "system-pc.pacman.txt"
+      ]
+    },
+    {
+      "name": "Base Laptop (i5 1235u)",
+      "id": "base-lt",
+      "deps": [
+        "system-laptop.pacman.txt"
+      ]
+    }
+  ],
+  "groups": [
+    {
+      "name": "Desktop Environment (Niri)",
+      "items": [
+        {
+          "name": "Niri Compositor & Core",
+          "id": "niri",
+          "deps": [
+            "niri.mix.txt"
+          ],
+          "configs": [
+            "niri",
+            "waybar",
+            "ironbar",
+            "fuzzel",
+            "mako",
+            "swaylock"
+          ]
+        },
+        {
+          "name": "GTK Themes",
+          "id": "gtk",
+          "configs": [
+            "gtk-3.0",
+            "gtk-4.0"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Shell & Terminal",
+      "items": [
+        {
+          "name": "Fish Shell",
+          "id": "fish",
+          "configs": [
+            "fish"
+          ]
+        },
+        {
+          "name": "Zsh Shell (+ OhMyZsh)",
+          "id": "zsh",
+          "configs": [
+            "zsh",
+            "ohmyzsh"
+          ]
+        },
+        {
+          "name": "Terminals (Alacritty, Ghostty, Kitty)",
+          "id": "terminals",
+          "configs": [
+            "alacritty",
+            "ghostty",
+            "kitty"
+          ]
+        },
+        {
+          "name": "Tmux",
+          "id": "tmux",
+          "configs": [
+            "tmux"
+          ]
+        },
+        {
+          "name": "Yazi File Manager",
+          "id": "yazi",
+          "configs": [
+            "yazi"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Development",
+      "items": [
+        {
+          "name": "NeoVim (MinVim)",
+          "id": "nvim",
+          "configs": [
+            "minvim:nvim"
+          ]
+        },
+        {
+          "name": "Zed Editor",
+          "id": "zed",
+          "configs": [
+            "zed"
+          ]
+        },
+        {
+          "name": "Dev Tools & Runtimes",
+          "id": "dev",
+          "deps": [
+            "dev.mix.txt"
+          ],
+          "configs": [
+            "clang"
+          ]
+        },
+        {
+          "name": "Docker & Virt",
+          "id": "virt",
+          "deps": [
+            "virt-docker.pacman.txt"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "System & Network",
+      "items": [
+        {
+          "name": "Zapret (VPN Bypass)",
+          "id": "zapret",
+          "configs": [
+            "zapret"
+          ]
+        },
+        {
+          "name": "VPN Tools",
+          "id": "vpn",
+          "deps": [
+            "net-vpn.mix.txt"
+          ]
+        },
+        {
+          "name": "Bluetooth Support",
+          "id": "bluetooth",
+          "deps": [
+            "bluetooth.pacman.txt"
+          ]
+        },
+        {
+          "name": "Audio & Media",
+          "id": "media",
+          "deps": [
+            "media-audio.pacman.txt"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Applications & Misc",
+      "items": [
+        {
+          "name": "General Apps",
+          "id": "apps",
+          "deps": [
+            "apps.mix.txt"
+          ]
+        },
+        {
+          "name": "CLI Utils",
+          "id": "utils",
+          "deps": [
+            "utils.mix.txt"
+          ]
+        },
+        {
+          "name": "Obsidian",
+          "id": "obsidian",
+          "configs": [
+            "obsidian"
+          ]
+        },
+        {
+          "name": "Japanese Input",
+          "id": "japanese",
+          "deps": [
+            "japanese.mix.txt"
+          ]
+        },
+        {
+          "name": "AI OCR Tool",
+          "id": "ocr",
+          "deps": [
+            "ai-ocr.pacman.txt"
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -7,3 +7,5 @@ test-*.py
 .suckless-srcs/
 /zapret-discord-youtube-linux
 .tags
+
+/__pycache__

@@ -1,0 +1,12 @@
+yazi
+fzf
+ripgrep
+fd
+dust
+bat
+less
+jq
+wget
+curl
+
+rok (https://codeberg.org/nimirus/rok.git)
