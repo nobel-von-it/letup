@@ -7,7 +7,7 @@ USERNAME="username"
 TIMEZONE="Europe/Moscow"
 LOCALE="en_US.UTF-8"
 
-# Detect partition naming (p1 for nvme/loop/mmcblk, 1 for sdX/vdX)
+# Detect partition naming
 if [[ $DISK == *nvme* || $DISK == *mmcblk* || $DISK == *loop* ]]; then
     P_SUFFIX="p"
 else
@@ -27,48 +27,45 @@ fi
 MIN_INSTALL=false
 CONFIRM=false
 SKIP_MIRRORS=false
+HW_PROFILE="amd-nvidia" # Default profile: amd-nvidia, intel-intel
 
 for arg in "$@"; do
     case $arg in
         --min) MIN_INSTALL=true ;;
         --confirm) CONFIRM=true ;;
         --mskip) SKIP_MIRRORS=true ;;
+        --profile=*) HW_PROFILE="${arg#*=}" ;;
     esac
 done
 
 set -e # Exit on error
 
 echo "--- Arch Linux Live CD Installer ---"
+echo "Hardware Profile: $HW_PROFILE"
 
 # --- Functions ---
 
 optimize_pacman() {
     echo "--- Optimizing Pacman for Live CD ---"
-    # Force enable parallel downloads with 10 threads
     sed -i 's/^#\?ParallelDownloads.*/ParallelDownloads = 10/' /etc/pacman.conf
     
-    # Set Russian mirrors (only for Live CD environment)
     if [ "$SKIP_MIRRORS" = false ]; then
         if command -v reflector >/dev/null 2>&1; then
             echo "Updating mirrorlist (Russia)..."
             reflector --country Russia --latest 10 --sort rate --save /etc/pacman.d/mirrorlist
         fi
-    else
-        echo "Skipping mirrorlist update as requested."
     fi
 }
 
 setup_partitions() {
     echo "--- Partitioning $DISK ---"
     if [ "$IS_EFI" = true ]; then
-        # UEFI: EFI (1G) + Root
         sfdisk "$DISK" <<EOF
 label: gpt
 1 : start=2048, size=2097152, type=C12A7328-F81F-11D2-BA4B-00A0C93EC93B
 2 : start=2099200, type=4F68BCE3-E8CD-4DB1-96E7-FBCAF984B709
 EOF
     else
-        # BIOS: BIOS Boot (1M) + Root
         sfdisk "$DISK" <<EOF
 label: gpt
 1 : start=2048, size=2048, type=21686148-6449-6E6F-744E-656564454649
@@ -79,26 +76,20 @@ EOF
 
 format_and_mount() {
     echo "--- Formatting and Mounting ---"
-    
-    # Wait for partitions to be recognized
-    echo "Waiting for kernel to re-read partition table..."
     udevadm settle
     sleep 2
 
-    # Wipe old signatures to avoid mount confusion
     wipefs -a "$PART_ROOT" || true
     
     if [ "$IS_EFI" = true ]; then
         wipefs -a "$PART_BOOT" || true
         mkfs.fat -F32 "$PART_BOOT"
         mkfs.btrfs -f "$PART_ROOT"
-        mount "$PART_ROOT" /mnt
-        mount --mkdir "$PART_BOOT" /mnt/boot
+        mount -t btrfs "$PART_ROOT" /mnt
+        mount -t vfat --mkdir "$PART_BOOT" /mnt/boot
     else
-        # In BIOS mode, PART_BOOT is the BIOS Boot partition (no FS needed)
-        # We only format Root
         mkfs.btrfs -f "$PART_ROOT"
-        mount "$PART_ROOT" /mnt
+        mount -t btrfs "$PART_ROOT" /mnt
     fi
 }
 
@@ -107,7 +98,14 @@ install_base() {
     PACKAGES="base linux linux-headers base-devel neovim git networkmanager btrfs-progs"
     
     if [ "$MIN_INSTALL" = false ]; then
-        PACKAGES="$PACKAGES linux-firmware amd-ucode"
+        PACKAGES="$PACKAGES linux-firmware"
+        
+        # Microcode selection based on profile
+        if [ "$HW_PROFILE" = "amd-nvidia" ]; then
+            PACKAGES="$PACKAGES amd-ucode"
+        elif [ "$HW_PROFILE" = "intel-intel" ]; then
+            PACKAGES="$PACKAGES intel-ucode"
+        fi
     fi
 
     pacstrap -K /mnt $PACKAGES
@@ -121,7 +119,9 @@ generate_fstab() {
 configure_system() {
     echo "--- Configuring System (Chroot) ---"
     
-    # We'll create a small helper script to run inside chroot
+    # Get Root UUID safely for bootloader configuration
+    ROOT_UUID=$(blkid -s UUID -o value "$PART_ROOT")
+
     cat <<EOF > /mnt/setup-chroot.sh
 #!/bin/bash
 set -e
@@ -137,7 +137,6 @@ echo "$HOSTNAME" > /etc/hostname
 
 echo "Optimizing Pacman in target system..."
 sed -i 's/^#\?ParallelDownloads.*/ParallelDownloads = 10/' /etc/pacman.conf
-# Mirrorlist is NOT touched here as requested.
 
 echo "Setting up network..."
 systemctl enable NetworkManager
@@ -152,18 +151,29 @@ if [ "$IS_EFI" = true ]; then
     echo "Installing Bootloader (systemd-boot)..."
     bootctl install
 
-    echo "Configuring systemd-boot entry..."
-    OPTIONS="root=$PART_ROOT rw rootfstype=btrfs"
+    # Base options using UUID
+    OPTIONS="root=UUID=$ROOT_UUID rw rootfstype=btrfs"
+    
+    if [ "$MIN_INSTALL" = false ] && [ "$HW_PROFILE" = "amd-nvidia" ]; then
+        OPTIONS="\$OPTIONS nvidia_drm.modeset=1 nvidia_drm.fbdev=1"
+    fi
+    # Note: Intel typically doesn't need extra kernel params for Wayland, i915 handles it.
+
+    UCODE_IMG=""
     if [ "$MIN_INSTALL" = false ]; then
-        OPTIONS="$OPTIONS nvidia_drm.modeset=1 nvidia_drm.fbdev=1"
+        if [ "$HW_PROFILE" = "amd-nvidia" ]; then
+            UCODE_IMG="initrd  /amd-ucode.img"
+        elif [ "$HW_PROFILE" = "intel-intel" ]; then
+            UCODE_IMG="initrd  /intel-ucode.img"
+        fi
     fi
 
     cat <<EOT > /boot/loader/entries/arch.conf
 title   Arch Linux
 linux   /vmlinuz-linux
-$( [ "$MIN_INSTALL" = false ] && echo "initrd  /amd-ucode.img" )
+\$UCODE_IMG
 initrd  /initramfs-linux.img
-options $OPTIONS
+options \$OPTIONS
 EOT
 
     echo "default arch.conf" > /boot/loader/loader.conf
@@ -173,29 +183,42 @@ else
     pacman -S --noconfirm grub
     grub-install --target=i386-pc "$DISK"
     
-    # Configure GRUB
-    OPTIONS="nvidia_drm.modeset=1 nvidia_drm.fbdev=1"
-    if [ "$MIN_INSTALL" = true ]; then OPTIONS=""; fi
+    OPTIONS=""
+    if [ "$MIN_INSTALL" = false ] && [ "$HW_PROFILE" = "amd-nvidia" ]; then 
+        OPTIONS="nvidia_drm.modeset=1 nvidia_drm.fbdev=1"
+    fi
     
-    sed -i "s|GRUB_CMDLINE_LINUX_DEFAULT=.*|GRUB_CMDLINE_LINUX_DEFAULT=\"quiet rw rootfstype=btrfs $OPTIONS\"|" /etc/default/grub
+    sed -i "s|GRUB_CMDLINE_LINUX_DEFAULT=.*|GRUB_CMDLINE_LINUX_DEFAULT=\"quiet rw rootfstype=btrfs \$OPTIONS\"|" /etc/default/grub
     grub-mkconfig -o /boot/grub/grub.cfg
 fi
 
 if [ "$MIN_INSTALL" = false ]; then
-    echo "Installing NVIDIA and Desktop components..."
-    pacman -S --noconfirm nvidia-dkms nvidia-utils egl-wayland \
-        niri xdg-desktop-portal-gnome polkit-gnome qt5-wayland qt6-wayland \
-        alacritty waybar fuzzel mako swaybg greetd greetd-tuigreet \
-        nwg-look kvantum
+    echo "Installing Desktop components (Niri)..."
+    # Base GUI packages
+    GUI_PACKAGES="niri xdg-desktop-portal-gnome polkit-gnome qt5-wayland qt6-wayland alacritty waybar fuzzel mako swaybg greetd greetd-tuigreet nwg-look kvantum"
+    
+    if [ "$HW_PROFILE" = "amd-nvidia" ]; then
+        echo "Installing NVIDIA specific packages..."
+        pacman -S --noconfirm nvidia-dkms nvidia-utils egl-wayland \$GUI_PACKAGES
 
-    echo "Configuring NVIDIA Early KMS..."
-    sed -i 's/^MODULES=()/MODULES=(nvidia nvidia_modeset nvidia_uvm nvidia_drm)/' /etc/mkinitcpio.conf
-    # Remove kms hook if present
-    sed -i 's/ kms / /' /etc/mkinitcpio.conf
+        echo "Configuring NVIDIA Early KMS..."
+        sed -i 's/^MODULES=()/MODULES=(nvidia nvidia_modeset nvidia_uvm nvidia_drm)/' /etc/mkinitcpio.conf
+        sed -i 's/ kms / /' /etc/mkinitcpio.conf # Remove kms hook for nvidia
+
+        echo "Enabling NVIDIA power management services..."
+        systemctl enable nvidia-suspend.service nvidia-hibernate.service nvidia-resume.service
+
+    elif [ "$HW_PROFILE" = "intel-intel" ]; then
+        echo "Installing Intel specific packages..."
+        pacman -S --noconfirm mesa vulkan-intel intel-media-driver \$GUI_PACKAGES
+
+        echo "Configuring Intel Early KMS..."
+        sed -i 's/^MODULES=()/MODULES=(i915)/' /etc/mkinitcpio.conf
+        # We DO NOT remove the kms hook here, it is essential for Intel!
+    fi
+
+    # Rebuild initramfs after module changes
     mkinitcpio -P
-
-    echo "Enabling NVIDIA power management services..."
-    systemctl enable nvidia-suspend.service nvidia-hibernate.service nvidia-resume.service
 
     echo "Configuring greetd with tuigreet..."
     mkdir -p /etc/greetd
@@ -222,7 +245,7 @@ EOF
 
 if [ "$CONFIRM" = false ]; then
     echo "WARNING: This will WIPE $DISK."
-    echo "Usage: $0 --confirm [--min] [--mskip]"
+    echo "Usage: $0 --confirm [--min] [--mskip] [--profile=amd-nvidia|intel-intel]"
     exit 1
 fi
 
@@ -234,4 +257,4 @@ generate_fstab
 configure_system
 
 echo "--- INSTALLATION COMPLETE ---"
-echo "You can now reboot into your new Arch Linux system."
+echo "Profile: $HW_PROFILE. You can now reboot into your new Arch Linux system."
