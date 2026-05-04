@@ -1,12 +1,16 @@
 #!/bin/bash
 
-# ==========================================
-# Установка зависимостей
-# ==========================================
 if [ "$1" = "-i" ] || [ "$1" = "--install" ]; then
     echo "Устанавливаю зависимости..."
-    sudo apt update
-    sudo apt install -y pandoc texlive-xetex texlive-extra-utils texlive-latex-extra texlive-lang-cyrillic ghostscript djvulibre-bin fonts-dejavu calibre
+    if command -v pacman >/dev/null 2>&1; then
+        sudo pacman -Sy --needed --noconfirm pandoc texlive-basic texlive-latex texlive-latexextra texlive-fontsrecommended texlive-fontsextra texlive-xetex texlive-langcyrillic ghostscript djvulibre ttf-dejavu calibre texlive-doc
+    elif command -v apt >/dev/null 2>&1; then
+        sudo apt update
+        sudo apt install -y pandoc texlive-xetex texlive-extra-utils texlive-latex-extra texlive-lang-cyrillic ghostscript djvulibre-bin fonts-dejavu calibre
+    else
+        echo "Ошибка: Не найден подходящий менеджер пакетов (pacman или apt)."
+        exit 1
+    fi
     echo "Готово!"
     exit 0
 fi
@@ -29,9 +33,6 @@ echo "======================================"
 echo "Исходный файл: $FILENAME"
 echo "======================================"
 
-# ==========================================
-# Создание LaTeX-преамбулы (Только для текстовых форматов)
-# ==========================================
 HEADER_TEX=$(mktemp)
 cat << 'EOF' > "$HEADER_TEX"
 \usepackage{fancyhdr}
@@ -48,9 +49,6 @@ cat << 'EOF' > "$HEADER_TEX"
 \setlength{\parindent}{1.5em}
 EOF
 
-# ==========================================
-# ЭТАП 1: Создание правильного A5
-# ==========================================
 case "$EXTENSION" in
     epub|fb2|mobi|azw3)
         TARGET_FILE="$INPUT_FILE"
@@ -60,7 +58,6 @@ case "$EXTENSION" in
         fi
 
         echo "Верстаю книгу с идеальными полями..."
-        # Задаем ваши отступы: внутри 18мм, снаружи 8мм, верх/низ 10мм
         pandoc "$TARGET_FILE" -o "$A5_OUTPUT" \
             --pdf-engine=xelatex \
             -V papersize=a5 \
@@ -85,18 +82,12 @@ case "$EXTENSION" in
             ddjvu -format=pdf "$INPUT_FILE" "$TEMP_RAW"
         fi
 
-        # Логика для PDF:
-        # 1. --trim '12mm 15mm 12mm 15mm': Отрезаем оригинальные белые края исходника.
-        # 2. --scale 0.93: Слегка уменьшаем оставшийся блок текста, чтобы он точно 
-        #    поместился на А5 и сформировал ваши поля 0.8-1см.
-        # 3. --offset '5mm 0mm': Сдвигаем всё на 5мм от центра для корешка (в сумме даст ~1.8см внутри).
-        
         pdfjam --twoside \
             --trim '12mm 15mm 12mm 15mm' --clip true \
             --scale 1 \
             --offset '5mm 0mm' \
             --paper a5paper \
-            "$TEMP_RAW" --outfile "$A5_OUTPUT" > /dev/null 2>&1
+            "$TEMP_RAW" --outfile "$A5_OUTPUT"
 
         if [ "$EXTENSION" = "djvu" ]; then rm "$TEMP_RAW"; fi
         ;;
@@ -110,14 +101,11 @@ esac
 
 rm -f "$HEADER_TEX"
 
-# ==========================================
-# ЭТАП 2: Спуск полос
-# ==========================================
 if [ -f "$A5_OUTPUT" ]; then
     echo "Создаю тетради для печати..."
     pdfbook2 --no-crop --signature=16 --short-edge \
         --inner-margin 0 --outer-margin 0 --top-margin 0 --bottom-margin 0 \
-        "$A5_OUTPUT" > /dev/null 2>&1
+        "$A5_OUTPUT"
     
     if [ -f "${BASENAME}_A5-book.pdf" ]; then
         mv "${BASENAME}_A5-book.pdf" "$PRINT_OUTPUT"
