@@ -156,6 +156,7 @@ window-rule {
     match app-id="libreoffice-calc"
     match app-id="kitty"
     match app-id="antigravity"
+    match app-id="Anki"
     open-on-workspace "2-work"
 }
 
