@@ -41,7 +41,7 @@ environment {
 
 
 layout {
-    gaps 2
+    gaps 5
     center-focused-column "never"
 
     preset-column-widths {
@@ -63,7 +63,7 @@ layout {
         inactive-color "#2c323c"
     }
     shadow {
-        on
+        off
         softness 30
         spread 5
         color "#1a1c2380" 
