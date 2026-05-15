@@ -67,10 +67,62 @@ if [ -f "$GPU_PATH" ]; then
     echo "power_saving" > "$GPU_PATH" || echo "Note: Could not set GPU profile immediately (requires newer kernel?)"
 fi
 
+# 8. Kernel Parameters for Intel GPU (Xe over i915)
+echo "[*] Configuring kernel parameters for Intel GPU..."
+CMDLINE_FILE="/etc/kernel/cmdline"
+if [ -f "$CMDLINE_FILE" ]; then
+    CURRENT_CMDLINE=$(cat "$CMDLINE_FILE")
+    NEW_CMDLINE="$CURRENT_CMDLINE"
+    
+    if [[ ! "$CURRENT_CMDLINE" =~ "i915.force_probe=!4628" ]]; then
+        NEW_CMDLINE="$NEW_CMDLINE i915.force_probe=!4628"
+    fi
+    if [[ ! "$CURRENT_CMDLINE" =~ "xe.force_probe=4628" ]]; then
+        NEW_CMDLINE="$NEW_CMDLINE xe.force_probe=4628"
+    fi
+    
+    if [ "$CURRENT_CMDLINE" != "$NEW_CMDLINE" ]; then
+        echo "$NEW_CMDLINE" > "$CMDLINE_FILE"
+        echo "[+] Updated $CMDLINE_FILE"
+    fi
+else
+    echo "Note: $CMDLINE_FILE not found. Skipping kernel parameter configuration."
+fi
+
+# 9. mkinitcpio Configuration (Early KMS)
+echo "[*] Configuring mkinitcpio MODULES..."
+MKINITCPIO_CONF="/etc/mkinitcpio.conf"
+
+add_module() {
+    local mod=$1
+    local file=$2
+    if grep -q "^MODULES=" "$file"; then
+        if ! grep -q "^MODULES=(.*\<${mod}\>.*)" "$file"; then
+            echo "[+] Adding $mod to mkinitcpio MODULES"
+            sed -i "s/^MODULES=(\(.*\))/MODULES=(\1 ${mod})/" "$file"
+            return 0
+        fi
+    fi
+    return 1
+}
+
+M_CHANGED=0
+if [ -f "$MKINITCPIO_CONF" ]; then
+    add_module "xe" "$MKINITCPIO_CONF" && M_CHANGED=1
+    add_module "i915" "$MKINITCPIO_CONF" && M_CHANGED=1
+    
+    if [ $M_CHANGED -eq 1 ]; then
+        echo "[*] Rebuilding initramfs..."
+        mkinitcpio -P
+    fi
+else
+    echo "Note: $MKINITCPIO_CONF not found. Skipping mkinitcpio configuration."
+fi
+
 echo "--- Optimization Complete ---"
 echo ""
 echo "Additional Manual Steps:"
-echo "1. Early KMS: Ensure 'xe' is in the MODULES array of /etc/mkinitcpio.conf and run 'mkinitcpio -P'."
-echo "2. Niri Config: Add 'swayidle' to your startup. Example:"
+echo "1. Niri Config: Add 'swayidle' to your startup. Example:"
 echo "   spawn-at-startup \"swayidle -w timeout 300 'niri msg action power-off-monitors' resume 'niri msg action power-on-monitors'\""
-echo "3. Reboot is recommended to ensure all udev rules and services are fully applied."
+echo "2. Reboot is recommended to ensure all udev rules and services are fully applied."
+
