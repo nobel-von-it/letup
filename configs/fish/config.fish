@@ -69,15 +69,15 @@ end
 # 3. ОСНОВНЫЕ ПЕРЕМЕННЫЕ ОКРУЖЕНИЯ
 # =============================================================================
 set -gx EDITOR nvim
-set -gx XDG_DATA_DIRS /var/lib/flatpak/exports/share "$HOME/.local/share/flatpak/exports/share" $XDG_DATA_DIRS
+# set -gx XDG_DATA_DIRS /var/lib/flatpak/exports/share "$HOME/.local/share/flatpak/exports/share" $XDG_DATA_DIRS
 set -gx CASE_SENSITIVE false
 
 # Темизация (синхронизировано с конфигом Niri)
-set -gx QT_QPA_PLATFORMTHEME gtk3
-set -gx GTK_THEME Adwaita:dark
+# set -gx QT_QPA_PLATFORMTHEME gtk3
+# set -gx GTK_THEME Adwaita:dark
 
 # Импут-методы (IBus как запасной, fcitx5 отключен)
-set -gx GLFW_IM_MODULE ibus
+# set -gx GLFW_IM_MODULE ibus
 
 
 # =============================================================================
