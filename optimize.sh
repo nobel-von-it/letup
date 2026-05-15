@@ -37,7 +37,7 @@ powerprofilesctl set power-saver
 
 # 6. Configure Powertop Auto-tune Service
 echo "[*] Configuring Powertop auto-tune service..."
-cat <<EOF > /etc/systemd/system/powertop-autotune.service
+cat <<'EOF' > /etc/systemd/system/powertop-autotune.service
 [Unit]
 Description=Powertop tunings
 After=multi-user.target
@@ -45,6 +45,7 @@ After=multi-user.target
 [Service]
 Type=oneshot
 ExecStart=/usr/bin/powertop --auto-tune
+ExecStartPost=/bin/sh -c 'for d in /sys/bus/usb/devices/*; do if [ -f "$d/idVendor" ] && [ "$(cat $d/idVendor)" = "2b89" ] && [ "$(cat $d/idProduct)" = "0043" ]; then echo on > "$d/power/control"; fi; done'
 RemainAfterExit=true
 
 [Install]
@@ -117,6 +118,22 @@ if [ -f "$MKINITCPIO_CONF" ]; then
     fi
 else
     echo "Note: $MKINITCPIO_CONF not found. Skipping mkinitcpio configuration."
+fi
+
+# 10. Wireless Mouse Optimization (UGREEN)
+echo "[*] Configuring udev rule for UGREEN Mouse (disable autosuspend)..."
+MOUSE_RULE="/etc/udev/rules.d/99-ugreen-mouse.rules"
+echo 'ACTION=="add|change", SUBSYSTEM=="usb", ATTR{idVendor}=="2b89", ATTR{idProduct}=="0043", ATTR{power/control}="on"' > "$MOUSE_RULE"
+echo "[+] Created udev rule: $MOUSE_RULE"
+
+# 11. Disable Baloo File Indexer
+if [ -n "$SUDO_USER" ]; then
+    echo "[*] Disabling Baloo file indexer for user $SUDO_USER..."
+    if sudo -u "$SUDO_USER" hash balooctl6 2>/dev/null; then
+        sudo -u "$SUDO_USER" balooctl6 disable || echo "Note: Failed to disable balooctl6"
+    elif sudo -u "$SUDO_USER" hash balooctl 2>/dev/null; then
+        sudo -u "$SUDO_USER" balooctl disable || echo "Note: Failed to disable balooctl"
+    fi
 fi
 
 echo "--- Optimization Complete ---"
