@@ -88,6 +88,10 @@ del_routes() {
     ip route show | grep "metric $METRIC" | awk '{print $1}' | while read -r ip; do
         ip route del "$ip" metric $METRIC 2>/dev/null
     done
+    
+    # Remove app bypass rules for torrents
+    while ip rule del priority 1000 2>/dev/null; do :; done
+    
     log "Cleanup complete."
 }
 
@@ -120,6 +124,10 @@ add_routes() {
             ip route add "$ip" via "$REAL_GW" dev "$REAL_DEV" metric $METRIC 2>/dev/null
         fi
     done
+
+    # Add interface-level bypass for torrents (priority 1000)
+    ip rule add oif "$REAL_DEV" table main priority 1000 2>/dev/null
+    log "Added interface bypass rule for apps bound to $REAL_DEV"
 
     log "Successfully injected $(echo "${all_ips[@]}" | wc -w) bypass routes."
 }
