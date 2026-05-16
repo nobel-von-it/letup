@@ -1,0 +1,3 @@
+function ytlecdl --wraps="yt-dlp --extract-audio --audio-format mp3 --audio-quality 5 --embed-metadata --embed-thumbnail --parse-metadata \"%(playlist_title|uploader)s - %(album)s\" --cookies-from-browser firefox -o \"%(title)s.%(ext)s\"" --description "alias ytlecdl yt-dlp --extract-audio --audio-format mp3 --audio-quality 5 --embed-metadata --embed-thumbnail --parse-metadata \"%(playlist_title|uploader)s - %(album)s\" --cookies-from-browser firefox -o \"%(title)s.%(ext)s\""
+  yt-dlp --extract-audio --audio-format mp3 --audio-quality 5 --embed-metadata --embed-thumbnail --parse-metadata "%(playlist_title|uploader)s - %(album)s" --cookies-from-browser firefox -o "%(title)s.%(ext)s" $argv
+end
