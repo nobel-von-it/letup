@@ -33,29 +33,37 @@ fish_vi_key_bindings
 # 2. КЛЮЧИ И БЕЗОПАСНОСТЬ (VAULT)
 # =============================================================================
 function unlock_vault
-    set -l vault_path "/mnt/vault"
+    # Ensure local GPG agent is updated with current session environment
+    gpg-connect-agent "setenv DISPLAY=$DISPLAY" "setenv WAYLAND_DISPLAY=$WAYLAND_DISPLAY" "updatestartuptty" /bye > /dev/null 2>&1
 
-    if test -d "$vault_path/.gnupg"
-        # GPG Setup
-        set -gx GNUPGHOME "$vault_path/.gnupg"
-        gpg-connect-agent "setenv DISPLAY=$DISPLAY" "setenv WAYLAND_DISPLAY=$WAYLAND_DISPLAY" "updatestartuptty" /bye > /dev/null 2>&1
-        
-        # SSH Setup
-        if not set -q SSH_AUTH_SOCK
-            eval (ssh-agent -c) > /dev/null
+    # SSH Agent Setup
+    if not set -q SSH_AUTH_SOCK
+        eval (ssh-agent -c) > /dev/null
+    end
+
+    # Add local SSH key to agent if present
+    if test -f ~/.ssh/id_ed25519
+        if not ssh-add -l | grep -q (ssh-keygen -lf ~/.ssh/id_ed25519 | awk '{print $2}')
+            ssh-add ~/.ssh/id_ed25519 2>/dev/null
         end
-        
-        if test -f "$vault_path/.ssh/id_ed25519"
-            if not ssh-add -l | grep -q (ssh-keygen -lf "$vault_path/.ssh/id_ed25519" | awk '{print $2}')
-                ssh-add "$vault_path/.ssh/id_ed25519" 2>/dev/null
+    end
+
+    # Check last backup time to notify user if older than 7 days
+    if status is-interactive
+        if test -f ~/.vault/.last_backup
+            set -l last_backup_time (cat ~/.vault/.last_backup | cut -d'.' -f1)
+            set -l current_time (date +%s)
+            set -l age (math "$current_time - $last_backup_time")
+            set -l week_seconds 604800
+            if test "$age" -gt "$week_seconds"
+                set -l days (math "floor($age / 86400)")
+                echo (set_color yellow) "⚠️  Внимание: Резервная копия хранилища не обновлялась уже $days дн.!" (set_color normal)
+                echo (set_color -o cyan) "💡 Запустите 'vault-manager sync' для синхронизации бэкапа." (set_color normal)
             end
+        else if test -d ~/.ssh; or test -d ~/.gnupg
+            echo (set_color yellow) "⚠️  Внимание: Резервная копия хранилища никогда не создавалась!" (set_color normal)
+            echo (set_color -o cyan) "💡 Запустите 'vault-manager sync' для резервного копирования." (set_color normal)
         end
-
-        if status is-interactive
-            echo (set_color green)"🔒 Vault mounted: GPG & SSH keys active."(set_color normal)
-        end
-    else
-        if set -q GNUPGHOME; set -e GNUPGHOME; end
     end
 end
 

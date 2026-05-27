@@ -39,6 +39,7 @@ CONFIG_NAMES = [
     "mako",
     "gtk-3.0",
     "gtk-4.0",
+    "vault-manager",
 ]
 
 
@@ -47,7 +48,10 @@ def check_configs_exist(src_path: Path, config_list: list[str]) -> list[str]:
     for config in config_list:
         print(f"  -* Checking {config}")
         orig_name = config.split(":")[0]
-        if not (src_path / orig_name).exists():
+        if orig_name == "vault-manager":
+            if not (src_path.parent / "vault-manager.py").exists():
+                not_founded.append(orig_name)
+        elif not (src_path / orig_name).exists():
             not_founded.append(orig_name)
 
     return not_founded
@@ -201,6 +205,28 @@ def zapret_config(src_path: Path, dest_path: Path) -> None:
         sys.exit(1)
 
 
+def vault_manager_config(src_path: Path) -> None:
+    letup_root = src_path.parent
+    vault_manager_src = letup_root / "vault-manager.py"
+    dest_bin_dir = Path.home() / ".local/bin"
+    dest_bin_dir.mkdir(parents=True, exist_ok=True)
+    dest_path = dest_bin_dir / "vault-manager"
+    
+    print(f"  -* Checking {dest_path}")
+    if dest_path.is_symlink():
+        print(f"    -* Removing symlink {dest_path}")
+        dest_path.unlink()
+    elif dest_path.exists():
+        print(f"    -* {dest_path} already exists and is not a symlink")
+        print("Aborted")
+        sys.exit(1)
+        
+    os.symlink(vault_manager_src, dest_path)
+    # Ensure it's executable
+    vault_manager_src.chmod(0o755)
+    print(f"    -* Linked vault-manager to {dest_path}")
+
+
 def setup_configs(src_path: Path, dest_path: Path, configs: list[str]) -> None:
     for config in configs:
         if config == "tmux":
@@ -215,6 +241,8 @@ def setup_configs(src_path: Path, dest_path: Path, configs: list[str]) -> None:
             obsidian_config(src_path, dest_path)
         elif config == "zapret":
             zapret_config(src_path, dest_path)
+        elif config == "vault-manager":
+            vault_manager_config(src_path)
         else:
             link_config(src_path, dest_path, config)
 
