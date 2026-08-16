@@ -1,0 +1,11 @@
+body .markdown-source-view.mod-cm6 .cm-line:not(.HyperMD-header):not(.HyperMD-list-line):not(.HyperMD-codeblock):not(:has(> br:only-child)) {
+    text-indent: 1em !important;
+    padding-left: 0 !important;
+}
+
+body .markdown-preview-view p {
+    text-indent: 1em !important;
+    margin-block-start: 0.5em !important;
+    margin-block-end: 0.5em !important;
+}
+

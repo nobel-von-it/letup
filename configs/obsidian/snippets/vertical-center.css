@@ -1,0 +1,12 @@
+.markdown-source-view.is-live-preview .cm-scroller {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.markdown-reading-view .markdown-preview-scroller {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 100%;
+}
