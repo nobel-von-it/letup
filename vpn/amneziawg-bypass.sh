@@ -11,6 +11,16 @@ DOMAINS=(
     "github.com" "api.github.com" "github.io" "raw.githubusercontent.com"
     "codeberg.org" "v2.codeberg.org"
     "aur.archlinux.org" "archlinux.org" "pkgbuild.com"
+    "elibrary.ru" "www.elibrary.ru"
+    "reddit.com" "www.reddit.com" "old.reddit.com" "out.reddit.com"
+    "gql.reddit.com" "gateway.reddit.com" "oauth.reddit.com" "sh.reddit.com"
+    "i.redd.it" "v.redd.it" "preview.redd.it" "redd.it"
+    "www.redditstatic.com" "redditmedia.com" "styles.redditmedia.com"
+    "b.thumbs.redditmedia.com" "a.thumbs.redditmedia.com"
+    "ozon.ru" "www.ozon.ru" "m.ozon.ru" "seller.ozon.ru"
+    "api.ozon.ru" "api-seller.ozon.ru" "cdn.ozon.ru"
+    "travel.ozon.ru" "fresh.ozon.ru" "bank.ozon.ru" "finance.ozon.ru"
+    "ozon.st" "www.ozon.st"
 )
 
 # Static CIDRs as fallback (GitHub & others)
@@ -18,6 +28,9 @@ STATIC_CIDRS=(
     "140.82.112.0/20" "192.30.252.0/22" "185.199.108.0/22" "143.55.64.0/21" # GitHub
     "217.197.84.140/32" # Codeberg
     "95.216.144.15/32"  # AUR
+    "195.209.52.65/32" "195.209.52.70/32" # elibrary.ru
+    "151.101.1.140/32" "151.101.65.140/32" "151.101.129.140/32" "151.101.193.140/32" # Reddit (Fastly)
+    "185.73.192.0/22" "194.9.210.0/23" "31.130.140.0/22" # Ozon & Ozon Bank
 )
 
 # --- Internal State ---
@@ -69,10 +82,15 @@ get_real_networking() {
 resolve_domains() {
     python3 -c "
 import socket
+import struct
 domains = [$(printf "'%s'," "${DOMAINS[@]}")]
 ips = set()
 for d in domains:
     try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        try:
+            s.setsockopt(socket.SOL_SOCKET, 36, struct.pack('I', 51820))
+        except: pass
         infos = socket.getaddrinfo(d, 80, socket.AF_INET)
         for i in infos: ips.add(i[4][0])
     except: pass
@@ -111,17 +129,32 @@ add_routes() {
     
     # Add dynamic IPs
     local resolved=$(resolve_domains)
-    if [[ -n "$resolved" ]]; then all_ips+=($resolved); fi
-    
-    # Try GitHub Meta API (if GitHub isn't totally blocked yet)
-    local gh_meta=$(curl --connect-timeout 2 -s https://api.github.com/meta | jq -r '.git[], .web[]' 2>/dev/null | grep -v ":")
-    if [[ -n "$gh_meta" ]]; then all_ips+=($gh_meta); fi
+    log "Resolved domains successfully"
 
+    if [[ -n "$resolved" ]]; then
+        while read -r line; do
+            [[ -n "$line" ]] && all_ips+=("$line")
+        done <<< "$resolved"
+        log "Resolved domains successfully"
+    fi
+
+    # Try GitHub Meta API (if GitHub isn't totally blocked yet)
+    local gh_meta=$(curl --connect-timeout 2 -s https://api.github.com/meta | jq -r '.git[], .web[]' 2>/dev/null | grep -v ":" | grep -v "localhost")
+    if [[ -n "$gh_meta" ]]; then
+        while read -r line; do
+            [[ -n "$line" ]] && all_ips+=("$line")
+        done <<< "$gh_meta"
+        log "Fetched GitHub Meta API successfully"
+    fi
+
+    local added_count=0
     # Atomic-like route addition
     for ip in $(echo "${all_ips[@]}" | tr ' ' '\n' | sort -u); do
         # We check if IP is valid before adding
         if [[ $ip =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+(/[0-9]+)?$ ]]; then
-            ip route add "$ip" via "$REAL_GW" dev "$REAL_DEV" metric $METRIC 2>/dev/null
+            if ip route add "$ip" via "$REAL_GW" dev "$REAL_DEV" metric $METRIC 2>/dev/null; then
+                ((added_count++))
+            fi
         fi
     done
 

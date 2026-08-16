@@ -56,7 +56,57 @@ else
     done
 fi
 
-# 4. Aggressive cleanup: any host route via the local gateway
+# 4. eLibrary.ru IPs
+ELIBRARY_IPS=("195.209.52.65" "195.209.52.70")
+for ip in "${ELIBRARY_IPS[@]}"; do
+    del_route "$ip"
+done
+ELIBRARY_DOMAINS=("elibrary.ru" "www.elibrary.ru")
+for domain in "${ELIBRARY_DOMAINS[@]}"; do
+    ips=$(python3 -c "import socket; socket.setdefaulttimeout(2); [print(i[4][0]) for i in socket.getaddrinfo('$domain', 80, socket.AF_INET)]" 2>/dev/null)
+    for ip in $ips; do
+        del_route "$ip"
+    done
+done
+
+# 5. Reddit IPs & Domains
+REDDIT_IPS=("151.101.1.140" "151.101.65.140" "151.101.129.140" "151.101.193.140")
+for ip in "${REDDIT_IPS[@]}"; do
+    del_route "$ip"
+done
+REDDIT_DOMAINS=(
+    "reddit.com" "www.reddit.com" "old.reddit.com" "out.reddit.com"
+    "gql.reddit.com" "gateway.reddit.com" "oauth.reddit.com" "sh.reddit.com"
+    "i.redd.it" "v.redd.it" "preview.redd.it" "redd.it"
+    "www.redditstatic.com" "redditmedia.com" "styles.redditmedia.com"
+    "b.thumbs.redditmedia.com" "a.thumbs.redditmedia.com"
+)
+for domain in "${REDDIT_DOMAINS[@]}"; do
+    ips=$(python3 -c "import socket; socket.setdefaulttimeout(2); [print(i[4][0]) for i in socket.getaddrinfo('$domain', 80, socket.AF_INET)]" 2>/dev/null)
+    for ip in $ips; do
+        del_route "$ip"
+    done
+done
+
+# 6. Ozon IPs & Domains
+OZON_CIDRS=("185.73.192.0/22" "194.9.210.0/23" "31.130.140.0/22")
+for cidr in "${OZON_CIDRS[@]}"; do
+    del_route "$cidr"
+done
+OZON_DOMAINS=(
+    "ozon.ru" "www.ozon.ru" "m.ozon.ru" "seller.ozon.ru"
+    "api.ozon.ru" "api-seller.ozon.ru" "cdn.ozon.ru"
+    "travel.ozon.ru" "fresh.ozon.ru" "bank.ozon.ru" "finance.ozon.ru"
+    "ozon.st" "www.ozon.st"
+)
+for domain in "${OZON_DOMAINS[@]}"; do
+    ips=$(python3 -c "import socket; socket.setdefaulttimeout(2); [print(i[4][0]) for i in socket.getaddrinfo('$domain', 80, socket.AF_INET)]" 2>/dev/null)
+    for ip in $ips; do
+        del_route "$ip"
+    done
+done
+
+# 7. Aggressive cleanup: any host route via the local gateway
 echo "Searching for remaining 'garbage' host routes via $GW..."
 GARBAGE=$(ip route show | grep "via $GW" | grep -v "default" | awk '{print $1}' | grep -E '^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$')
 for ip in $GARBAGE; do
