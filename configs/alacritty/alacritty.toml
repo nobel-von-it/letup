@@ -8,7 +8,7 @@ args = ["-l", "-c", "tmux a || tmux"]
 [window]
 padding = { x = 10, y = 10 }
 dynamic_title = true
-opacity = 0.9
+opacity = 1
 blur = true
 
 [window.class]
