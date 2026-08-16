@@ -1,3 +1,5 @@
+#let horizontalrule = [#v(0.5em)#align(center, line(length: 30%, stroke: 0.5pt))#v(0.5em)]
+
 #let book(
   title: "Неизвестно",
   author: "Неизвестно",
@@ -16,7 +18,7 @@
   )
 
   // Настройки шрифта (лучше использовать шрифты с засечками для печати)
-  set text(font: "Linux Libertine", size: 10.5pt, lang: "ru")
+  set text(font: ("Linux Libertine", "Liberation Serif", "DejaVu Serif", "Noto Serif"), size: 10.5pt, lang: "ru")
   
   // Настройки абзаца: выравнивание по ширине, отступ первой строки, висячие строки
   set par(

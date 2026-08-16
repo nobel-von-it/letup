@@ -45,7 +45,7 @@ sed -i -E 's/<[a-zA-Z0-9._-]+>//g' "$TEMP_DIR/content.typ"
 echo "[3/4] Верстка и компиляция..."
 # Создаем главный файл сборки внутри TEMP_DIR
 cat << EOF > "$TEMP_DIR/main.typ"
-#import "$TEMPLATE_NAME": book
+#import "$TEMPLATE_NAME": *
 
 #show: book.with(
   title: "$BASENAME",

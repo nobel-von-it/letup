@@ -1,3 +1,5 @@
+#let horizontalrule = [#v(0.5em)#align(center, line(length: 30%, stroke: 0.5pt))#v(0.5em)]
+
 #let book(
   title: [],
   author: [],
@@ -9,7 +11,7 @@
     numbering: "1",
   )
   
-  set text(font: "Linux Libertine", size: 10.5pt, lang: "ru")
+  set text(font: ("Linux Libertine", "Liberation Serif", "DejaVu Serif", "Noto Serif"), size: 10.5pt, lang: "ru")
   set par(justify: true, leading: 0.65em, first-line-indent: 1.5em)
 
   show outline.entry.where(level: 1): it => {
