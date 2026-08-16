@@ -46,7 +46,7 @@ LOCAL_TARGETS = {
 BACKUP_TARGETS = {
     "gnupg": Path(DEFAULT_MOUNT_POINT) / ".gnupg",
     "ssh": Path(DEFAULT_MOUNT_POINT) / ".ssh",
-    "vault": Path(DEFAULT_MOUNT_POINT) / ".vault"
+    "vault": Path(DEFAULT_MOUNT_POINT)
 }
 
 TIMESTAMP_FILE = LOCAL_TARGETS["vault"] / ".last_backup"
@@ -188,6 +188,8 @@ def get_directory_size(path: Path) -> str:
     total_size = 0
     try:
         for root, dirs, files in os.walk(path):
+            if path == Path(DEFAULT_MOUNT_POINT):
+                dirs[:] = [d for d in dirs if d not in (".gnupg", ".ssh", "lost+found", ".vault")]
             for f in files:
                 fp = Path(root) / f
                 if not fp.is_symlink():
@@ -299,6 +301,28 @@ def secure_shred_directory(path: Path):
             print(f"  {Icons.CROSS} Ошибка при удалении символической ссылки {path}: {e}")
         return
 
+    if path == Path(DEFAULT_MOUNT_POINT):
+        print(f"{Colors.RED}[Шредер]{Colors.RESET} Запущен процесс безопасного уничтожения кастомных файлов на флешке...")
+        file_count = 0
+        for item in path.iterdir():
+            if item.name in (".gnupg", ".ssh", "lost+found", ".mount_write_test", ".last_backup", ".vault"):
+                continue
+            if item.is_symlink():
+                item.unlink()
+            elif item.is_dir():
+                for root, dirs, files in os.walk(item, topdown=False):
+                    root_path = Path(root)
+                    for f in files:
+                        file_path = root_path / f
+                        secure_shred_file(file_path)
+                        file_count += 1
+                shutil.rmtree(item)
+            else:
+                secure_shred_file(item)
+                file_count += 1
+        print(f"  {Icons.SUCCESS} {Colors.GREEN}Безопасное уничтожение кастомных файлов на флешке завершено ({file_count} файлов)!{Colors.RESET}")
+        return
+
     if not path.exists():
         return
 
@@ -322,7 +346,6 @@ def secure_shred_directory(path: Path):
         print(f"  {Icons.CROSS} Ошибка при удалении папок в {path}: {e}")
         
     print(f"  {Icons.SUCCESS} {Colors.GREEN}Безопасное уничтожение завершено ({file_count} файлов)!{Colors.RESET}")
-
 def clone_vault(direction: str):
     """
     Clones folders from one side to another. Useful for fresh setups.
@@ -340,7 +363,7 @@ def clone_vault(direction: str):
             print(f"{Icons.CROSS} {Colors.RED}Ошибка:{Colors.RESET} Локальные папки GPG/SSH/Vault отсутствуют! Нечего клонировать.")
             sys.exit(1)
 
-        print(f"{Icons.WARN} {Colors.RED}{Colors.BOLD}ВНИМАНИЕ:{Colors.RESET} Клонирование на флешку ПЕРЕЗАПИШЕТ все данные бэкапа в {DEFAULT_MOUNT_POINT}!")
+        print(f"{Icons.WARN} {Colors.RED}{Colors.BOLD}ВНИМАНИЕ:{Colors.RESET} Клонирование на флешку ПЕРЕЗАПИШЕТ данные бэкапа в {DEFAULT_MOUNT_POINT}!")
         confirm = input("Вы уверены, что хотите продолжить клонирование? (y/N): ")
         if confirm.lower() != 'y':
             print("Операция отменена.")
@@ -353,19 +376,39 @@ def clone_vault(direction: str):
                 continue
             
             print(f"  {Icons.SYNC} Клонирование {name} (Локально {Icons.ARROW} Флешка)...")
-            if bak.is_symlink():
-                print(f"    {Icons.INFO} {Colors.CYAN}Удаление символической ссылки {bak} на флешке...{Colors.RESET}")
-                try:
-                    bak.unlink()
-                except Exception as e:
-                    print(f"    {Icons.CROSS} {Colors.RED}Ошибка удаления символической ссылки {bak}: {e}{Colors.RESET}")
-                    sys.exit(1)
-                    
-            if bak.exists():
-                shutil.rmtree(bak)
-            
-            shutil.copytree(loc, bak, symlinks=True)
-            print(f"    {Icons.SUCCESS} Клон {name} успешно создан на флешке.")
+            if name == "vault":
+                # Copy contents of ~/.vault directly to the root /mnt/vault
+                for item in loc.iterdir():
+                    dest_item = bak / item.name
+                    if dest_item.name in (".gnupg", ".ssh", "lost+found", ".mount_write_test", ".vault"):
+                        continue
+                    if dest_item.is_symlink():
+                        dest_item.unlink()
+                    if dest_item.exists():
+                        if dest_item.is_dir():
+                            shutil.rmtree(dest_item)
+                        else:
+                            dest_item.unlink()
+                            
+                    if item.is_dir():
+                        shutil.copytree(item, dest_item, symlinks=True)
+                    else:
+                        shutil.copy2(item, dest_item)
+                print(f"    {Icons.SUCCESS} Содержимое vault успешно склонировано в корень флешки.")
+            else:
+                if bak.is_symlink():
+                    print(f"    {Icons.INFO} {Colors.CYAN}Удаление символической ссылки {bak} на флешке...{Colors.RESET}")
+                    try:
+                        bak.unlink()
+                    except Exception as e:
+                        print(f"    {Icons.CROSS} {Colors.RED}Ошибка удаления символической ссылки {bak}: {e}{Colors.RESET}")
+                        sys.exit(1)
+                        
+                if bak.exists():
+                    shutil.rmtree(bak)
+                
+                shutil.copytree(loc, bak, symlinks=True)
+                print(f"    {Icons.SUCCESS} Клон {name} успешно создан на флешке.")
         
         # Update timestamp file locally and copy it to backup
         update_backup_timestamp()
@@ -385,7 +428,7 @@ def clone_vault(direction: str):
             print(f"{Icons.CROSS} {Colors.RED}Ошибка:{Colors.RESET} Папки бэкапа на флешке отсутствуют!")
             sys.exit(1)
 
-        print(f"{Icons.WARN} {Colors.RED}{Colors.BOLD}КРИТИЧЕСКОЕ ПРЕДУПРЕЖДЕНИЕ:{Colors.RESET} Восстановление из бэкапа ПОЛНОСТЬЮ перезапишет ваши локальные ключи GPG, SSH и Vault!")
+        print(f"{Icons.WARN} {Colors.RED}{Colors.BOLD}КРИТИЧЕСКОЕ ПРЕДУПРЕЖДЕНИЕ:{Colors.RESET} Восстановление из бэкапа ПОЛНОСТЬЮ перезапишет ваши локальные GPG, SSH и файлы Vault!")
         confirm = input("Вы действительно хотите полностью заменить локальные ключи версией с флешки? (y/N): ")
         if confirm.lower() != 'y':
             print("Восстановление отменено.")
@@ -399,25 +442,48 @@ def clone_vault(direction: str):
                 continue
             
             print(f"  {Icons.SYNC} Восстановление {name} (Флешка {Icons.ARROW} Локально)...")
-            if loc.is_symlink():
-                print(f"    {Icons.INFO} {Colors.CYAN}Удаление символической ссылки {loc} перед восстановлением...{Colors.RESET}")
-                try:
-                    loc.unlink()
-                except Exception as e:
-                    print(f"    {Icons.CROSS} {Colors.RED}Ошибка удаления символической ссылки {loc}: {e}{Colors.RESET}")
-                    sys.exit(1)
+            if name == "vault":
+                loc.mkdir(parents=True, exist_ok=True)
+                # Copy all custom items from /mnt/vault to ~/.vault
+                for item in bak.iterdir():
+                    if item.name in (".gnupg", ".ssh", "lost+found", ".mount_write_test", ".vault"):
+                        continue
                     
-            if loc.exists():
-                # Securely shred local directory first
-                print(f"    {Icons.WARN} Безопасное уничтожение старых локальных файлов {name} перед восстановлением...")
-                secure_shred_directory(loc)
-            
-            shutil.copytree(bak, loc, symlinks=True)
-            print(f"    {Icons.SUCCESS} Компонент {name} успешно восстановлен.")
+                    dest_item = loc / item.name
+                    if dest_item.is_symlink():
+                        dest_item.unlink()
+                    if dest_item.exists():
+                        if dest_item.is_dir():
+                            secure_shred_directory(dest_item)
+                        else:
+                            secure_shred_file(dest_item)
+                            
+                    if item.is_dir():
+                        shutil.copytree(item, dest_item, symlinks=True)
+                    else:
+                        shutil.copy2(item, dest_item)
+                print(f"    {Icons.SUCCESS} Все дополнительные папки/файлы из корня флешки успешно скопированы в {loc}.")
+            else:
+                if loc.is_symlink():
+                    print(f"    {Icons.INFO} {Colors.CYAN}Удаление символической ссылки {loc} перед восстановлением...{Colors.RESET}")
+                    try:
+                        loc.unlink()
+                    except Exception as e:
+                        print(f"    {Icons.CROSS} {Colors.RED}Ошибка удаления символической ссылки {loc}: {e}{Colors.RESET}")
+                        sys.exit(1)
+                        
+                if loc.exists():
+                    # Securely shred local directory first
+                    print(f"    {Icons.WARN} Безопасное уничтожение старых локальных файлов {name} перед восстановлением...")
+                    secure_shred_directory(loc)
+                
+                shutil.copytree(bak, loc, symlinks=True)
+                print(f"    {Icons.SUCCESS} Компонент {name} успешно восстановлен.")
 
         # Set correct permissions on local paths
         check_ownership_and_permissions(fix_issues=True)
         print(f"\n{Icons.SUCCESS} {Colors.GREEN}Восстановление локального хранилища успешно завершено!{Colors.RESET}")
+
 
 def update_backup_timestamp():
     """
@@ -477,6 +543,8 @@ def run_sync(direction: str, dry_run: bool):
         # --delete (remove extraneous files on receiver)
         # --exclude (prevent lock files or sockets from copying)
         excludes = ["S.gpg-agent*", "S.scdaemon", "gpg-agent.conf", "control", "random_seed"]
+        if name == "vault":
+            excludes.extend([".gnupg", ".ssh", "lost+found", ".mount_write_test", ".vault"])
         
         exclude_args = []
         for exc in excludes:
