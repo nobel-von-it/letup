@@ -1,0 +1,62 @@
+#!/usr/bin/env bash
+
+# This script runs on system suspend and resume.
+# If an external monitor is connected and the laptop lid is closed on resume,
+# it forces KDE's KScreen to disable the built-in display (eDP-1) to avoid lock screen freezing.
+
+if [ "$1" = "post" ]; then
+    # Run in the background so we don't block the main systemd resume flow
+    (
+        # Wait a short moment to let DRM and Wayland/KWin initialize
+        sleep 3
+
+        # 1. Find the active GUI user and their UID
+        USER_NAME=$(loginctl list-users | awk 'NR==2 {print $2}')
+        if [ -z "$USER_NAME" ]; then
+            USER_NAME="nimirus" # fallback
+        fi
+        USER_UID=$(id -u "$USER_NAME")
+        
+        # 2. Check if the lid is closed
+        LID_CLOSED=false
+        if grep -q "closed" /proc/acpi/button/lid/LID0/state; then
+            LID_CLOSED=true
+        fi
+
+        # 3. Check if any external monitor is connected
+        EXTERNAL_CONNECTED=false
+        for conn in /sys/class/drm/card*-*; do
+            if [[ "$conn" == *"eDP-1"* ]]; then
+                continue
+            fi
+            if [ -f "$conn/status" ] && grep -q "^connected" "$conn/status"; then
+                EXTERNAL_CONNECTED=true
+                break
+            fi
+        done
+
+        # 4. If lid is closed and an external monitor is connected, disable eDP-1
+        if [ "$LID_CLOSED" = true ] && [ "$EXTERNAL_CONNECTED" = true ]; then
+            # Determine the Wayland socket
+            WAYLAND_DISPLAY=""
+            if [ -S "/run/user/$USER_UID/wayland-0" ]; then
+                WAYLAND_DISPLAY="wayland-0"
+            elif [ -S "/run/user/$USER_UID/wayland-1" ]; then
+                WAYLAND_DISPLAY="wayland-1"
+            fi
+
+            if [ -n "$WAYLAND_DISPLAY" ]; then
+                # Run kscreen-doctor as the graphical session user
+                for i in {1..5}; do
+                    if env XDG_RUNTIME_DIR="/run/user/$USER_UID" WAYLAND_DISPLAY="$WAYLAND_DISPLAY" sudo -u "$USER_NAME" kscreen-doctor output.eDP-1.disable >> /var/log/kscreen-resume-fix.log 2>&1; then
+                        echo "$(date): Successfully disabled eDP-1" >> /var/log/kscreen-resume-fix.log
+                        break
+                    fi
+                    sleep 1
+                done
+            else
+                echo "$(date): Error: Wayland display socket not found" >> /var/log/kscreen-resume-fix.log
+            fi
+        fi
+    ) &
+fi
