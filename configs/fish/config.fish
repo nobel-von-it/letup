@@ -96,6 +96,7 @@ set -gx PATH "$HOME/.local/bin" \
              "$HOME/.cargo/bin" \
              "$HOME/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/" \
              "$HOME/.ghcup/bin" \
+             "$HOME/.nix-profile/bin" \
              "/home/nimirus/go/bin" \
              "/opt/cuda/bin" \
              "/usr/lib/emscripten" \
@@ -129,3 +130,7 @@ set -gx SYNCTHING_ADDR "127.0.0.1:8384"
 set -gx MO_BASE_PATH "$HOME/Documents/MagnumOpus"
 set -gx MO_SCRIPTS "$LETUP/mo-scripts"
 set -gx MO_EDITOR nvim
+
+
+# Added by Antigravity CLI installer
+set -gx PATH "/home/nimirus/.local/bin" $PATH
