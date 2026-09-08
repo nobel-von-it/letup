@@ -31,6 +31,8 @@ function Blocks(blocks)
                                  ltext:find("предисловие") or 
                                  ltext:match("^часть") or 
                                  ltext:match("^глава") or
+                                 ltext:match("^chapter") or
+                                 text:match("^%d+%.%s+") or
                                  text:match("^%d+$")
 
             if is_real_start then

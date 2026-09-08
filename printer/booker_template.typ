@@ -1,5 +1,14 @@
 #let horizontalrule = [#v(0.5em)#align(center, line(length: 30%, stroke: 0.5pt))#v(0.5em)]
 
+#let blockquote(body) = [
+  #set text(size: 0.95em, style: "italic")
+  #block(inset: (left: 1.2em, top: 0.3em, bottom: 0.3em))[#body]
+]
+
+#let endnote(num, contents) = [
+  #stack(dir: ltr, spacing: 3pt, super[#num], contents)
+]
+
 #let book(
   title: [],
   author: [],
