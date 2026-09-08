@@ -1,0 +1,13 @@
+/* Для жирного текста в режиме чтения и редактирования */
+.markdown-rendered strong,
+.cm-strong {
+  font-weight: 700 !important; /* Попробуйте 800, если хотите еще жирнее */
+  font-family: "JetBrainsMono Nerd Font ExtraBold", "JetBrainsMono NF", sans-serif !important;
+}
+
+/* Для заголовков, если они тоже кажутся тонкими */
+.markdown-rendered h1, .markdown-rendered h2, .markdown-rendered h3,
+.cm-header-1, .cm-header-2, .cm-header-3 {
+  font-weight: 800 !important;
+}
+
