@@ -3,9 +3,9 @@
 # Aim: 110% safe direct routing for Git services
 
 # --- Configuration ---
-WG_IFACE="usa1"
+CONFIG_PATH="${AMNEZIA_CONFIG:-/etc/amnezia/amneziawg/usa1.conf}"
+WG_IFACE="${WG_IFACE:-$(basename "${CONFIG_PATH%.conf}")}"
 METRIC=555
-CONFIG_PATH="/etc/amnezia/amneziawg/usa1.conf"
 
 DOMAINS=(
     "github.com" "api.github.com" "github.io" "raw.githubusercontent.com"
@@ -36,6 +36,7 @@ STATIC_CIDRS=(
 # --- Internal State ---
 REAL_GW=""
 REAL_DEV=""
+REAL_IP=""
 
 log() {
     echo "[Bypass] $1"
@@ -62,7 +63,7 @@ get_real_networking() {
     # Method 2: Fallback to 'ip route get' if main table is empty
     if [[ -z "$REAL_GW" || -z "$REAL_DEV" ]]; then
         local target="8.8.8.8"
-        local route_info=$(ip route get "$target" | grep -v "$WG_IFACE" | head -n 1)
+        local route_info=$(ip route get "$target" 2>/dev/null | grep -v -E "($WG_IFACE|neth|usa|awg|tun|tap)" | head -n 1)
         REAL_GW=$(echo "$route_info" | awk '{print $3}')
         REAL_DEV=$(echo "$route_info" | awk '{print $5}')
     fi
@@ -71,6 +72,9 @@ get_real_networking() {
         log "CRITICAL: Physical gateway detection failed. Safety abort."
         return 1
     fi
+
+    # Detect physical IP address
+    REAL_IP=$(ip -4 addr show dev "$REAL_DEV" 2>/dev/null | awk '/inet / {print $2}' | cut -d/ -f1 | head -n 1)
 
     # Safety check: is the gateway alive?
     if ! ping -c 1 -W 1 "$REAL_GW" >/dev/null 2>&1; then
@@ -107,8 +111,10 @@ del_routes() {
         ip route del "$ip" metric $METRIC 2>/dev/null
     done
     
-    # Remove app bypass rules for torrents
-    while ip rule del priority 1000 2>/dev/null; do :; done
+    # Remove all app and policy bypass rules for torrents (priorities 998 to 1002)
+    for prio in 998 999 1000 1001 1002; do
+        while ip rule del priority "$prio" 2>/dev/null; do :; done
+    done
     
     log "Cleanup complete."
 }
@@ -123,13 +129,12 @@ add_routes() {
         exit 1
     fi
 
-    log "Injecting bypass via $REAL_GW on $REAL_DEV..."
+    log "Injecting bypass via $REAL_GW on $REAL_DEV (IP: ${REAL_IP:-unknown})..."
 
     local all_ips=("${STATIC_CIDRS[@]}")
     
     # Add dynamic IPs
     local resolved=$(resolve_domains)
-    log "Resolved domains successfully"
 
     if [[ -n "$resolved" ]]; then
         while read -r line; do
@@ -158,11 +163,41 @@ add_routes() {
         fi
     done
 
-    # Add interface-level bypass for torrents (priority 1000)
+    # 1. Interface-level bypass for apps bound to physical dev (SO_BINDTODEVICE)
     ip rule add oif "$REAL_DEV" table main priority 1000 2>/dev/null
-    log "Added interface bypass rule for apps bound to $REAL_DEV"
+    log "Added interface bypass rule for oif $REAL_DEV (priority 1000)"
 
-    log "Successfully injected $(echo "${all_ips[@]}" | wc -w) bypass routes."
+    # 2. Source IP bypass for incoming replies and sockets bound to physical IP
+    if [[ -n "$REAL_IP" ]]; then
+        ip rule add from "$REAL_IP" table main priority 999 2>/dev/null
+        log "Added source IP bypass rule for from $REAL_IP (priority 999)"
+    fi
+
+    # 3. Ingress bypass to prevent asymmetric routing
+    ip rule add iif "$REAL_DEV" table main priority 998 2>/dev/null
+
+    # 4. Torrent port bypass (auto-detect from qBittorrent configs or common ports)
+    local torrent_ports=()
+    for qb_conf in "$HOME/.config/qBittorrent/qBittorrent.conf" /home/*/.config/qBittorrent/qBittorrent.conf; do
+        if [[ -f "$qb_conf" ]]; then
+            local p=$(grep -i "Session\\\\Port=" "$qb_conf" 2>/dev/null | cut -d= -f2 | tr -d '\r\n')
+            [[ -n "$p" ]] && torrent_ports+=("$p")
+        fi
+    done
+    # Add standard torrent listening ports as fallback
+    torrent_ports+=(45088 51413 6881)
+
+    for port in $(printf "%s\n" "${torrent_ports[@]}" | sort -u); do
+        if [[ "$port" =~ ^[0-9]+$ ]]; then
+            ip rule add ipproto tcp sport "$port" table main priority 1001 2>/dev/null
+            ip rule add ipproto udp sport "$port" table main priority 1001 2>/dev/null
+            ip rule add ipproto tcp dport "$port" table main priority 1002 2>/dev/null
+            ip rule add ipproto udp dport "$port" table main priority 1002 2>/dev/null
+            log "Added port bypass rules for torrent port $port (priorities 1001-1002)"
+        fi
+    done
+
+    log "Successfully injected $added_count bypass routes."
 }
 
 # --- Installation ---

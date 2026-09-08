@@ -4,8 +4,12 @@
 echo "Checking for bypass routes to clean..."
 
 # Detect default gateway
-GW=$(ip route show default | grep -v "usa1" | awk '/default/ {print $3}' | head -n 1)
-DEV=$(ip route show default | grep -v "usa1" | awk '/default/ {print $5}' | head -n 1)
+GW=$(ip route show table main default | awk '/default/ {print $3}' | head -n 1)
+DEV=$(ip route show table main default | awk '/default/ {print $5}' | head -n 1)
+if [[ -z "$GW" || -z "$DEV" ]]; then
+    GW=$(ip route show default | grep -v -E "(usa|neth|awg|tun|tap)" | awk '/default/ {print $3}' | head -n 1)
+    DEV=$(ip route show default | grep -v -E "(usa|neth|awg|tun|tap)" | awk '/default/ {print $5}' | head -n 1)
+fi
 
 if [[ -z "$GW" || -z "$DEV" ]]; then
     echo "Could not detect default gateway. Please check your connection."
@@ -125,6 +129,11 @@ if [[ -n "$GW6" ]]; then
         sudo ip -6 route del "$ip" via "$GW6" dev "$DEV6" 2>/dev/null
     done
 fi
+
+# Policy rules cleanup
+for prio in 998 999 1000 1001 1002; do
+    while sudo ip rule del priority "$prio" 2>/dev/null; do :; done
+done
 
 echo "Cleanup finished."
 ip route show | grep "via $GW" | grep -v "default"
