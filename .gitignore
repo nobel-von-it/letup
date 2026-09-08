@@ -1,4 +1,6 @@
 *.tar.gz
+*.tar.xz
+*.tar.tz
 .ruff_cache
 .venv
 configs/tmux/plugins/
@@ -8,4 +10,6 @@ test-*.py
 /zapret-discord-youtube-linux
 .tags
 
-/__pycache__
+__pycache__/
+*.py[cod]
+*$py.class

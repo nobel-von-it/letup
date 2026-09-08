@@ -1,0 +1,6 @@
+# Generated Booker artifacts
+/*.pdf
+/*.md
+/*.typ
+!booker_template.typ
+/*_media/
