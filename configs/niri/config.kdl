@@ -13,32 +13,24 @@ input {
         tap
         natural-scroll
     }
+    mouse {
+        accel-speed -0.05
+        accel-profile "flat"
+    }
 }
 
 output "*" {
     scale 1.0
 }
-output "eDP-1" {
-    mode "1920x1080@60.000"
-}
-
+// output "eDP-1" {
+//     mode "1920x1080@60.000"
+// }
+//
 output "HDMI-A-1" {
-    mode "1920x1080@99.999"
+    mode "1920x1080@100"
+    variable-refresh-rate
+    // mode "1920x1080@99.999"
 }
-
-environment {
-    XDG_DATA_DIRS "/usr/local/share:/usr/share"
-    XDG_CURRENT_DESKTOP "niri:GNOME"
-    XDG_SESSION_DESKTOP "GNOME"
-    GBM_BACKEND "nvidia-drm"
-    __GLX_VENDOR_LIBRARY_NAME "nvidia"
-    LIBVA_DRIVER_NAME "nvidia"
-    QT_QPA_PLATFORM "wayland"
-    QT_QPA_PLATFORMTHEME "gtk3"
-    GTK_THEME "Adwaita:dark"
-    ADW_DISABLE_PORTAL "1"
-}
-
 
 layout {
     gaps 5
@@ -75,26 +67,27 @@ spawn-at-startup "waybar"
 spawn-at-startup "mako"
 spawn-at-startup "xwayland-satellite"
 spawn-at-startup "/usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1"
+spawn-at-startup "kdeconnectd"
 
 spawn-at-startup "awww-daemon"
-spawn-at-startup "awww img /home/nimirus/Downloads/2b-city-ruins-nier-automata-moewalls-com.jpg"
+spawn-at-startup "awww img /home/nimirus/Git/letup/wallpaper.jpg"
 // spawn-at-startup "fcitx5" "-d"
 // spawn-at-startup "blueman-applet"
 // spawn-at-startup "lxqt-policykit-agent"
 
-spawn-at-startup "swayidle" "-w" \
-    "timeout" "300" "sh -c 'playerctl pause; swaylock -f'" \
-    "timeout" "330" "niri msg action power-off-monitors" \
-    "resume" "niri msg action power-on-monitors" \
-    "before-sleep" "sh -c 'playerctl pause; swaylock -f'"
+// spawn-at-startup "swayidle" "-w" \
+//     "timeout" "300" "sh -c 'playerctl pause; swaylock -f'" \
+//     "timeout" "330" "niri msg action power-off-monitors" \
+//     "resume" "niri msg action power-on-monitors" \
+//     "before-sleep" "sh -c 'playerctl pause; swaylock -f'"
 
 // Форсируем темную тему для GTK приложений (и браузеров)
-spawn-at-startup "gsettings" "set" "org.gnome.desktop.interface" "color-scheme" "prefer-dark"
-spawn-at-startup "gsettings" "set" "org.gnome.desktop.interface" "gtk-theme" "Adwaita-dark"
-spawn-at-startup "gsettings" "set" "org.gnome.desktop.interface" "icon-theme" "Papirus-Dark"
-
-spawn-at-startup "brightnessctl" "set" "30%"
-spawn-at-startup "syncthing" "--no-browser"
+// spawn-at-startup "gsettings" "set" "org.gnome.desktop.interface" "color-scheme" "prefer-dark"
+// spawn-at-startup "gsettings" "set" "org.gnome.desktop.interface" "gtk-theme" "Adwaita-dark"
+// spawn-at-startup "gsettings" "set" "org.gnome.desktop.interface" "icon-theme" "Papirus-Dark"
+//
+// spawn-at-startup "brightnessctl" "set" "30%"
+// spawn-at-startup "syncthing" "--no-browser"
 
 // spawn-at-startup "kitty"
 // spawn-at-startup "obsidian"
@@ -178,6 +171,7 @@ window-rule {
     match app-id="blueman-manager"
     match app-id="org.qbittorrent.qBittorrent"
     match app-id="io.github.htkhiem.Euphonica"
+    match app-id="Happ"
     open-on-workspace "4-sys"
 }
 
