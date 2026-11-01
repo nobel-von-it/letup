@@ -14,3 +14,8 @@ desc = "Compress with ouch (tar.gz)"
 on = ["c", "y"]
 run = 'shell "cat %s | wl-copy" --confirm'
 desc = "Copy file content to clipboard"
+
+[[mgr.prepend_keymap]]
+on = [ "g", "p" ]
+run = "plugin quick-picks"
+desc = "Open quick picks"
