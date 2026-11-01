@@ -5,6 +5,7 @@ import shutil
 import subprocess
 import time
 import argparse
+import stat
 from pathlib import Path
 from datetime import datetime
 
@@ -98,6 +99,22 @@ def print_banner():
 
 def get_mount_point() -> Path:
     return Path(DEFAULT_MOUNT_POINT)
+
+def ignore_sockets_and_bad_files(dir_path, names):
+    """Игнорирует Unix-сокеты и файлы, к которым нет доступа."""
+    ignored = []
+    for name in names:
+        full_path = os.path.join(dir_path, name)
+        try:
+            # Проверяем тип файла через lstat (чтобы не переходить по симлинкам)
+            st = os.lstat(full_path)
+            if stat.S_ISSOCK(st.st_mode):
+                ignored.append(name)
+        except Exception:
+            # Если файл недоступен (Errno 6 и т.д.), тоже игнорируем его
+            ignored.append(name)
+    return ignored
+
 
 def is_drive_mounted() -> bool:
     """
@@ -693,9 +710,13 @@ def clone_vault(direction: str, force: bool = False):
                             dest_item.unlink()
                             
                     if item.is_dir():
-                        shutil.copytree(item, dest_item, symlinks=True)
+                        shutil.copytree(item, dest_item, symlinks=True, ignore=ignore_sockets_and_bad_files)
                     else:
-                        shutil.copy2(item, dest_item)
+                        try:
+                            if not stat.S_ISSOCK(os.lstat(item).st_mode):
+                                shutil.copy2(item, dest_item)
+                        except Exception:
+                            pass
                 print(f"    {Icons.SUCCESS} Все папки/файлы из корня флешки успешно скопированы в {loc}.")
             else:
                 if loc.is_symlink():
@@ -708,7 +729,7 @@ def clone_vault(direction: str, force: bool = False):
                 if loc.exists():
                     shutil.rmtree(loc)
                 
-                shutil.copytree(bak, loc, symlinks=True)
+                shutil.copytree(bak, loc, symlinks=True, ignore=ignore_sockets_and_bad_files)
                 print(f"    {Icons.SUCCESS} Компонент {name} успешно восстановлен.")
 
         check_ownership_and_permissions(fix_issues=True)
