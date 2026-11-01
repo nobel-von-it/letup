@@ -46,13 +46,13 @@ kwriteconfig6 --file kwinrc --group Effect-overview --key FilterWindows false
 kwriteconfig6 --file krunnerrc --group Plugins --key windowsEnabled false
 
 echo "=== 7. Настройка keyd для Meta + Scroll (переключение столов мышью) ==="
+# Внимание: тачпады не поддерживаются в keyd, указываем только обычную мышь
 if command -v keyd >/dev/null 2>&1; then
     sudo mkdir -p /etc/keyd
     sudo tee /etc/keyd/default.conf > /dev/null << 'EOF'
 [ids]
 *
 2b89:0043
-0911:5288
 
 [meta]
 scrollup = C-M-left
@@ -65,7 +65,10 @@ else
     echo "Предупреждение: keyd не установлен. Установите его: sudo pacman -S keyd"
 fi
 
-echo "=== 8. Применение настроек KWin и системы ==="
+echo "=== 8. Включение нажатия касанием (Tap to click) для тачпада ==="
+kwriteconfig6 --file kcminputrc --group "Libinput" --group "2321" --group "21128" --group "PNP0C50:00 0911:5288 Touchpad" --key TapToClick true
+
+echo "=== 9. Применение настроек KWin и системы ==="
 qdbus6 org.kde.KWin /KWin org.kde.KWin.reconfigure 2>/dev/null || true
 
 echo "Готово! Все настройки GNOME-поведения в KDE успешно применены."
